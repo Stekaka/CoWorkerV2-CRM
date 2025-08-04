@@ -14,18 +14,34 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [checkingSession, setCheckingSession] = useState(true)
   const router = useRouter()
 
   // Kolla om användaren redan är inloggad
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        router.replace('/dashboard')
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          router.replace('/dashboard')
+        }
+      } catch (error) {
+        console.error('Session check error:', error)
+      } finally {
+        setCheckingSession(false)
       }
     }
     checkSession()
   }, [router])
+
+  // Visa loading medan vi kollar sessionen
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-lg">Kontrollerar inloggning...</div>
+      </div>
+    )
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,6 +57,8 @@ export default function LoginPage() {
       if (error) {
         setError(error.message)
       } else if (data?.user) {
+        // Vänta lite för att sessionen ska sättas ordentligt
+        await new Promise(resolve => setTimeout(resolve, 500))
         // Använd router.replace istället för window.location
         router.replace('/dashboard')
       }

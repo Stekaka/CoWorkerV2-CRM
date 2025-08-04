@@ -30,6 +30,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null)
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [authChecked, setAuthChecked] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -57,6 +58,7 @@ export default function DashboardPage() {
 
         // Hämta statistik
         await fetchStats()
+        setAuthChecked(true)
       } catch (error) {
         console.error('Auth check error:', error)
         router.replace('/login')
@@ -65,8 +67,10 @@ export default function DashboardPage() {
       }
     }
 
-    checkUser()
-  }, [router])
+    if (!authChecked) {
+      checkUser()
+    }
+  }, [router, authChecked])
 
   const fetchStats = async () => {
     try {
