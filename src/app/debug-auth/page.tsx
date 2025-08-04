@@ -2,11 +2,20 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase-client'
+import type { User, Session } from '@supabase/supabase-js'
+
+interface UserProfile {
+  id: string
+  email: string
+  name: string
+  role: string
+  company_id: string
+}
 
 export default function DebugAuthPage() {
-  const [user, setUser] = useState<any>(null)
-  const [session, setSession] = useState<any>(null)
-  const [profile, setProfile] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
+  const [profile, setProfile] = useState<UserProfile | null>(null)
   const [error, setError] = useState<string>('')
 
   useEffect(() => {
