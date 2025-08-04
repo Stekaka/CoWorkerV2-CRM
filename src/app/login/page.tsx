@@ -1,47 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import supabase from '@/lib/supabase-client'
+import AuthGuard from '@/components/AuthGuard'
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [checkingSession, setCheckingSession] = useState(true)
-  const router = useRouter()
-
-  // Kolla om användaren redan är inloggad
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
-          router.replace('/dashboard')
-        }
-      } catch (error) {
-        console.error('Session check error:', error)
-      } finally {
-        setCheckingSession(false)
-      }
-    }
-    checkSession()
-  }, [router])
-
-  // Visa loading medan vi kollar sessionen
-  if (checkingSession) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-lg">Kontrollerar inloggning...</div>
-      </div>
-    )
-  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,19 +21,15 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (error) {
         setError(error.message)
-      } else if (data?.user) {
-        // Vänta lite för att sessionen ska sättas ordentligt
-        await new Promise(resolve => setTimeout(resolve, 500))
-        // Använd router.replace istället för window.location
-        router.replace('/dashboard')
       }
+      // AuthContext hanterar redirects automatiskt
     } catch {
       setError('Ett oväntat fel inträffade')
     } finally {
@@ -130,5 +98,13 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <AuthGuard requireAuth={false}>
+      <LoginForm />
+    </AuthGuard>
   )
 }

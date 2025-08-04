@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
 import supabase from '@/lib/supabase-client'
 import ModernDashboard from './modern-dashboard'
+import AuthGuard from '@/components/AuthGuard'
 
 interface User {
   id: string
@@ -26,51 +27,16 @@ interface Stats {
   recentLeads: Lead[]
 }
 
-export default function DashboardPage() {
-  const [user, setUser] = useState<User | null>(null)
+function DashboardContent() {
+  const { user: authUser } = useAuth()
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
-  const [authChecked, setAuthChecked] = useState(false)
-  const router = useRouter()
 
   useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
-        if (error) {
-          console.error('Session error:', error)
-          router.replace('/login')
-          return
-        }
-
-        if (!session?.user) {
-          router.replace('/login')
-          return
-        }
-
-        // Sätt användaren
-        setUser({
-          id: session.user.id,
-          name: session.user.email?.split('@')[0] || 'Användare',
-          email: session.user.email || ''
-        })
-
-        // Hämta statistik
-        await fetchStats()
-        setAuthChecked(true)
-      } catch (error) {
-        console.error('Auth check error:', error)
-        router.replace('/login')
-      } finally {
-        setLoading(false)
-      }
+    if (authUser) {
+      fetchStats()
     }
-
-    if (!authChecked) {
-      checkUser()
-    }
-  }, [router, authChecked])
+  }, [authUser])
 
   const fetchStats = async () => {
     try {
@@ -113,18 +79,20 @@ export default function DashboardPage() {
       })
     } catch (error) {
       console.error('Error fetching stats:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Laddar...</div>
+        <div className="text-lg">Laddar dashboard...</div>
       </div>
     )
   }
 
-  if (!user || !stats) {
+  if (!stats || !authUser) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-lg">Kunde inte ladda data</div>
@@ -132,5 +100,19 @@ export default function DashboardPage() {
     )
   }
 
+  const user: User = {
+    id: authUser.id,
+    name: authUser.email?.split('@')[0] || 'Användare',
+    email: authUser.email || ''
+  }
+
   return <ModernDashboard user={user} stats={stats} />
+}
+
+export default function DashboardPage() {
+  return (
+    <AuthGuard requireAuth={true}>
+      <DashboardContent />
+    </AuthGuard>
+  )
 }
