@@ -18,6 +18,8 @@ export default function AuthDebugPage() {
   const [authState, setAuthState] = useState<AuthState | null>(null)
   const [loading, setLoading] = useState(true)
   const [loginTest, setLoginTest] = useState('')
+  const [testEmail, setTestEmail] = useState('test@example.com')
+  const [testPassword, setTestPassword] = useState('testpass123')
   const router = useRouter()
 
   useEffect(() => {
@@ -76,8 +78,8 @@ export default function AuthDebugPage() {
     
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email: 'test@example.com',
-        password: 'testpass123',
+        email: testEmail,
+        password: testPassword,
       })
       
       if (error) {
@@ -117,7 +119,31 @@ export default function AuthDebugPage() {
         </div>
 
         <div className="bg-blue-50 p-4 rounded">
-          <h2 className="text-xl font-semibold mb-2">Actions</h2>
+          <h2 className="text-xl font-semibold mb-4">Test Login</h2>
+          
+          <div className="space-y-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Email:</label>
+              <input
+                type="email"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                className="w-full p-2 border rounded"
+                placeholder="din@email.se"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Lösenord:</label>
+              <input
+                type="password"
+                value={testPassword}
+                onChange={(e) => setTestPassword(e.target.value)}
+                className="w-full p-2 border rounded"
+                placeholder="dittlösenord"
+              />
+            </div>
+          </div>
+          
           <div className="space-x-4">
             <button 
               onClick={testLogin}
