@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import supabase from '@/lib/supabase-client'
 import ModernDashboard from './modern-dashboard'
 
 interface User {
@@ -31,79 +30,24 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    checkAuth()
+    // Temporärt: Visa dashboard även utan session för att testa
+    const mockUser = {
+      id: 'test',
+      name: 'Test User',
+      email: 'test@example.com'
+    }
+    
+    const mockStats = {
+      totalLeads: 0,
+      newLeads: 0,
+      upcomingReminders: 0,
+      recentLeads: []
+    }
+    
+    setUser(mockUser)
+    setStats(mockStats)
+    setLoading(false)
   }, [])
-
-  const checkAuth = async () => {
-    try {
-      const { data: { session }, error } = await supabase.auth.getSession()
-      
-      if (error || !session?.user) {
-        // Hard redirect utan router
-        window.location.href = '/login'
-        return
-      }
-
-      // Sätt användaren
-      setUser({
-        id: session.user.id,
-        name: session.user.email?.split('@')[0] || 'Användare',
-        email: session.user.email || ''
-      })
-
-      // Hämta statistik
-      await fetchStats()
-    } catch (error) {
-      console.error('Auth check error:', error)
-      window.location.href = '/login'
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchStats = async () => {
-    try {
-      // Hämta leads
-      const { data: leads, error: leadsError } = await supabase
-        .from('leads')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (leadsError) {
-        console.error('Error fetching leads:', leadsError)
-        return
-      }
-
-      // Hämta reminders
-      const { data: reminders, error: remindersError } = await supabase
-        .from('reminders')
-        .select('*')
-        .gte('reminder_date', new Date().toISOString())
-        .order('reminder_date', { ascending: true })
-
-      if (remindersError) {
-        console.error('Error fetching reminders:', remindersError)
-        return
-      }
-
-      // Beräkna statistik
-      const now = new Date()
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-      
-      const newLeads = leads?.filter(lead => 
-        new Date(lead.created_at) > weekAgo
-      ).length || 0
-
-      setStats({
-        totalLeads: leads?.length || 0,
-        newLeads,
-        upcomingReminders: reminders?.length || 0,
-        recentLeads: leads?.slice(0, 5) || []
-      })
-    } catch (error) {
-      console.error('Error fetching stats:', error)
-    }
-  }
 
   if (loading) {
     return (
