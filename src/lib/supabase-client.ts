@@ -9,4 +9,6 @@ const supabase = createBrowserClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+// Export both default and createClient for backward compatibility
 export default supabase
+export const createClient = () => supabase
