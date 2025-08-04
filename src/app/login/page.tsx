@@ -27,7 +27,7 @@ export default function LoginPage() {
 
       if (error) {
         setError(error.message)
-      } else if (data.user) {
+      } else if (data?.user) {
         // Vänta lite för att sessionen ska sättas
         await new Promise(resolve => setTimeout(resolve, 1000))
         

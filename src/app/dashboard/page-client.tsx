@@ -21,7 +21,7 @@ export default function LoginPage() {
       }
     })
     return () => {
-      authListener?.unsubscribe()
+      authListener?.subscription.unsubscribe()
     }
   }, [])
 
