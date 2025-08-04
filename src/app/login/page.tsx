@@ -19,19 +19,29 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
+    console.log('Login attempt started with:', { email, password: '***' })
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
+      console.log('Supabase login result:', { data, error })
+
       if (error) {
+        console.error('Login error:', error)
         setError(error.message)
       } else {
-        // Hard redirect utan router
-        window.location.href = '/dashboard'
+        console.log('Login successful, redirecting...')
+        // Vänta lite innan redirect
+        setTimeout(() => {
+          console.log('Executing redirect to dashboard')
+          window.location.href = '/dashboard'
+        }, 1000)
       }
-    } catch {
+    } catch (err) {
+      console.error('Login exception:', err)
       setError('Ett oväntat fel inträffade')
     } finally {
       setLoading(false)
