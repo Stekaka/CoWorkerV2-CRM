@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +14,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const router = useRouter()
+
+  // Kolla om användaren redan är inloggad
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        router.replace('/dashboard')
+      }
+    }
+    checkSession()
+  }, [router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,11 +41,8 @@ export default function LoginPage() {
       if (error) {
         setError(error.message)
       } else if (data?.user) {
-        // Vänta lite för att sessionen ska sättas
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Använd window.location istället för router
-        window.location.href = '/dashboard'
+        // Använd router.replace istället för window.location
+        router.replace('/dashboard')
       }
     } catch {
       setError('Ett oväntat fel inträffade')

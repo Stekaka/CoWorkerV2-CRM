@@ -39,12 +39,12 @@ export default function DashboardPage() {
         
         if (error) {
           console.error('Session error:', error)
-          router.push('/login')
+          router.replace('/login')
           return
         }
 
         if (!session?.user) {
-          router.push('/login')
+          router.replace('/login')
           return
         }
 
@@ -59,7 +59,7 @@ export default function DashboardPage() {
         await fetchStats()
       } catch (error) {
         console.error('Auth check error:', error)
-        router.push('/login')
+        router.replace('/login')
       } finally {
         setLoading(false)
       }
