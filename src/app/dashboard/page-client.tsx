@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
 import supabase from '@/lib/supabase-client'
 import ModernDashboard from './modern-dashboard'
-import AuthGuard from '@/components/AuthGuard'
 
 interface User {
   id: string
@@ -27,16 +25,41 @@ interface Stats {
   recentLeads: Lead[]
 }
 
-function DashboardContent() {
-  const { user: authUser } = useAuth()
+export default function DashboardPage() {
+  const [user, setUser] = useState<User | null>(null)
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (authUser) {
-      fetchStats()
+    checkAuth()
+  }, [])
+
+  const checkAuth = async () => {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession()
+      
+      if (error || !session?.user) {
+        // Hard redirect utan router
+        window.location.href = '/login'
+        return
+      }
+
+      // Sätt användaren
+      setUser({
+        id: session.user.id,
+        name: session.user.email?.split('@')[0] || 'Användare',
+        email: session.user.email || ''
+      })
+
+      // Hämta statistik
+      await fetchStats()
+    } catch (error) {
+      console.error('Auth check error:', error)
+      window.location.href = '/login'
+    } finally {
+      setLoading(false)
     }
-  }, [authUser])
+  }
 
   const fetchStats = async () => {
     try {
@@ -79,8 +102,6 @@ function DashboardContent() {
       })
     } catch (error) {
       console.error('Error fetching stats:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -92,7 +113,7 @@ function DashboardContent() {
     )
   }
 
-  if (!stats || !authUser) {
+  if (!user || !stats) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-lg">Kunde inte ladda data</div>
@@ -100,19 +121,5 @@ function DashboardContent() {
     )
   }
 
-  const user: User = {
-    id: authUser.id,
-    name: authUser.email?.split('@')[0] || 'Användare',
-    email: authUser.email || ''
-  }
-
   return <ModernDashboard user={user} stats={stats} />
-}
-
-export default function DashboardPage() {
-  return (
-    <AuthGuard requireAuth={true}>
-      <DashboardContent />
-    </AuthGuard>
-  )
 }

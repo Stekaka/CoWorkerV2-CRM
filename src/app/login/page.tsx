@@ -7,9 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import supabase from '@/lib/supabase-client'
-import AuthGuard from '@/components/AuthGuard'
 
-function LoginForm() {
+export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -28,8 +27,10 @@ function LoginForm() {
 
       if (error) {
         setError(error.message)
+      } else {
+        // Hard redirect utan router
+        window.location.href = '/dashboard'
       }
-      // AuthContext hanterar redirects automatiskt
     } catch {
       setError('Ett oväntat fel inträffade')
     } finally {
@@ -98,13 +99,5 @@ function LoginForm() {
         </CardContent>
       </Card>
     </div>
-  )
-}
-
-export default function LoginPage() {
-  return (
-    <AuthGuard requireAuth={false}>
-      <LoginForm />
-    </AuthGuard>
   )
 }
