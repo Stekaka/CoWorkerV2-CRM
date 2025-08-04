@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
 
-// Tillfälligt inaktiverad för debugging
 export async function middleware() {
-  // Låt alla requests gå igenom utan auth-kontroll
+  // Tillåt alla requests för debugging – återaktivera auth-skydd sen!
   return NextResponse.next()
 }
 

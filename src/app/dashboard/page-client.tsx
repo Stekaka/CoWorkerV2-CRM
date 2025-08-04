@@ -1,93 +1,112 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase-client'
-import { useRouter } from 'next/navigation'
-import ModernDashboard from './modern-dashboard'
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import supabase from '@/lib/supabase-client'
 
-export default function DashboardPage() {
-  const [user, setUser] = useState<{id: string, name: string, email: string, company_id: string} | null>(null)
-  const [stats, setStats] = useState<{totalLeads: number, newLeads: number, upcomingReminders: number, recentLeads: unknown[]} | null>(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
+export default function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const supabase = createClient()
-      
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) {
-        router.push('/login')
-        return
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        window.location.href = '/dashboard'
       }
+    })
+    return () => {
+      authListener?.unsubscribe()
+    }
+  }, [])
 
-      // Hämta användarprofil
-      const { data: userData } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
 
-      if (!userData) {
-        router.push('/login')
-        return
-      }
-
-      setUser(userData)
-
-      // Hämta statistik
-      const [
-        { count: totalLeads },
-        { count: newLeads },
-        { count: upcomingReminders },
-        { data: recentLeads }
-      ] = await Promise.all([
-        supabase
-          .from('leads')
-          .select('*', { count: 'exact', head: true })
-          .eq('company_id', userData.company_id),
-        supabase
-          .from('leads')
-          .select('*', { count: 'exact', head: true })
-          .eq('company_id', userData.company_id)
-          .eq('status', 'new'),
-        supabase
-          .from('reminders')
-          .select('*', { count: 'exact', head: true })
-          .eq('company_id', userData.company_id)
-          .eq('completed', false)
-          .gte('due_date', new Date().toISOString())
-          .lte('due_date', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()),
-        supabase
-          .from('leads')
-          .select('*')
-          .eq('company_id', userData.company_id)
-          .order('created_at', { ascending: false })
-          .limit(5)
-      ])
-
-      setStats({
-        totalLeads: totalLeads || 0,
-        newLeads: newLeads || 0,
-        upcomingReminders: upcomingReminders || 0,
-        recentLeads: recentLeads || []
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       })
 
+      if (error) {
+        setError(error.message)
+      }
+      // Ingen redirect här! onAuthStateChange löser det.
+    } catch {
+      setError('Ett oväntat fel inträffade')
+    } finally {
       setLoading(false)
     }
-
-    checkAuth()
-  }, [router])
-
-  if (loading) {
-    return <div className="p-8">Loading...</div>
   }
 
-  if (!user || !stats) {
-    return null
-  }
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">Logga in</CardTitle>
+          <CardDescription>
+            Ange dina uppgifter för att komma åt ditt konto
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <Label htmlFor="email">E-postadress</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="mt-1"
+                placeholder="din@epost.se"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="password">Lösenord</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="mt-1"
+                placeholder="••••••••"
+              />
+            </div>
 
-  // @ts-expect-error Type compatibility issue
-  return <ModernDashboard user={user} stats={stats} />
+            {error && (
+              <div className="text-red-600 text-sm">{error}</div>
+            )}
+
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={loading}
+            >
+              {loading ? 'Loggar in...' : 'Logga in'}
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Har du inget konto?{' '}
+              <Link href="/register" className="text-blue-600 hover:underline">
+                Registrera dig
+              </Link>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }
