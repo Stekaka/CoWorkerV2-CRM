@@ -2,106 +2,158 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase-client'
+import { useRouter } from 'next/navigation'
 import type { User, Session } from '@supabase/supabase-js'
 
-interface UserProfile {
-  id: string
-  email: string
-  name: string
-  role: string
-  company_id: string
+interface AuthState {
+  session: Session | null
+  user: User | null
+  sessionError?: string
+  userError?: string
+  error?: string
+  timestamp: string
 }
 
-export default function DebugAuthPage() {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [error, setError] = useState<string>('')
+export default function AuthDebugPage() {
+  const [authState, setAuthState] = useState<AuthState | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [loginTest, setLoginTest] = useState('')
+  const router = useRouter()
 
   useEffect(() => {
     const supabase = createClient()
     
     const checkAuth = async () => {
       try {
+        console.log('Checking auth state...')
+        
         // Hämta session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        setSession(session)
+        console.log('Session:', session)
+        console.log('Session error:', sessionError)
         
-        if (sessionError) {
-          setError('Session error: ' + sessionError.message)
-          return
-        }
-
         // Hämta användare
         const { data: { user }, error: userError } = await supabase.auth.getUser()
-        setUser(user)
+        console.log('User:', user)
+        console.log('User error:', userError)
         
-        if (userError) {
-          setError('User error: ' + userError.message)
-          return
-        }
-
-        if (user) {
-          // Hämta användarprofil från database - utan .single() först
-          const { data: profiles, error: profileError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', user.id)
-          
-          if (profileError) {
-            setError('Profile error: ' + profileError.message)
-          } else {
-            // Visa hur många profiler som hittades
-            console.log('Found profiles:', profiles)
-            if (profiles && profiles.length > 0) {
-              setProfile(profiles[0]) // Ta första profilen
-            } else {
-              setError('No profile found for user ID: ' + user.id)
-            }
-          }
-        }
+        setAuthState({
+          session,
+          user,
+          sessionError: sessionError?.message,
+          userError: userError?.message,
+          timestamp: new Date().toISOString()
+        })
       } catch (err) {
-        setError('Unexpected error: ' + String(err))
+        console.error('Auth check error:', err)
+        setAuthState({
+          session: null,
+          user: null,
+          error: String(err),
+          timestamp: new Date().toISOString()
+        })
+      } finally {
+        setLoading(false)
       }
     }
 
     checkAuth()
+
+    // Lyssna på auth-ändringar
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session)
+      checkAuth()
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
+  const testLogin = async () => {
+    setLoginTest('Testing login...')
+    const supabase = createClient()
+    
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: 'test@example.com',
+        password: 'testpass123',
+      })
+      
+      if (error) {
+        setLoginTest(`Login error: ${error.message}`)
+      } else {
+        setLoginTest('Login successful! Checking redirect...')
+        setTimeout(() => {
+          router.push('/dashboard')
+          router.refresh()
+        }, 1000)
+      }
+    } catch (err) {
+      setLoginTest(`Login exception: ${String(err)}`)
+    }
+  }
+
+  const logout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.refresh()
+  }
+
+  if (loading) {
+    return <div className="p-8">Loading auth state...</div>
+  }
+
   return (
-    <div className="p-8">
+    <div className="p-8 max-w-4xl">
       <h1 className="text-2xl font-bold mb-4">Auth Debug</h1>
       
-      <div className="space-y-4">
-        <div>
-          <h2 className="text-xl font-semibold">Session</h2>
-          <pre className="bg-gray-100 p-4 rounded overflow-auto">
-            {JSON.stringify(session, null, 2)}
+      <div className="space-y-6">
+        <div className="bg-gray-100 p-4 rounded">
+          <h2 className="text-xl font-semibold mb-2">Current Auth State</h2>
+          <pre className="text-sm overflow-auto">
+            {JSON.stringify(authState, null, 2)}
           </pre>
         </div>
 
-        <div>
-          <h2 className="text-xl font-semibold">User</h2>
-          <pre className="bg-gray-100 p-4 rounded overflow-auto">
-            {JSON.stringify(user, null, 2)}
-          </pre>
-        </div>
-
-        <div>
-          <h2 className="text-xl font-semibold">Profile</h2>
-          <pre className="bg-gray-100 p-4 rounded overflow-auto">
-            {JSON.stringify(profile, null, 2)}
-          </pre>
-        </div>
-
-        {error && (
-          <div>
-            <h2 className="text-xl font-semibold text-red-600">Error</h2>
-            <pre className="bg-red-100 p-4 rounded overflow-auto text-red-800">
-              {error}
-            </pre>
+        <div className="bg-blue-50 p-4 rounded">
+          <h2 className="text-xl font-semibold mb-2">Actions</h2>
+          <div className="space-x-4">
+            <button 
+              onClick={testLogin}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Test Login
+            </button>
+            <button 
+              onClick={logout}
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            >
+              Logout
+            </button>
+            <button 
+              onClick={() => window.location.reload()}
+              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+            >
+              Reload Page
+            </button>
           </div>
-        )}
+          {loginTest && (
+            <div className="mt-4 p-2 bg-yellow-100 rounded">
+              {loginTest}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-green-50 p-4 rounded">
+          <h2 className="text-xl font-semibold mb-2">Environment Check</h2>
+          <ul className="space-y-1 text-sm">
+            <li>SUPABASE_URL: {process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ Set' : '❌ Missing'}</li>
+            <li>SUPABASE_ANON_KEY: {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✅ Set' : '❌ Missing'}</li>
+            <li>URL: {process.env.NEXT_PUBLIC_SUPABASE_URL}</li>
+            <li>Key starts with: {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 20)}...</li>
+          </ul>
+        </div>
       </div>
     </div>
   )
