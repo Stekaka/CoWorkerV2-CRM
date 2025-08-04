@@ -1,112 +1,132 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useRouter } from 'next/navigation'
 import supabase from '@/lib/supabase-client'
+import ModernDashboard from './modern-dashboard'
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+interface User {
+  id: string
+  name: string
+  email: string
+}
+
+interface Lead {
+  id: string
+  name: string
+  email: string
+  status: string
+  created_at: string
+}
+
+interface Stats {
+  totalLeads: number
+  newLeads: number
+  upcomingReminders: number
+  recentLeads: Lead[]
+}
+
+export default function DashboardPage() {
+  const [user, setUser] = useState<User | null>(null)
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        window.location.href = '/dashboard'
+    const checkUser = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('Session error:', error)
+          router.push('/login')
+          return
+        }
+
+        if (!session?.user) {
+          router.push('/login')
+          return
+        }
+
+        // Sätt användaren
+        setUser({
+          id: session.user.id,
+          name: session.user.email?.split('@')[0] || 'Användare',
+          email: session.user.email || ''
+        })
+
+        // Hämta statistik
+        await fetchStats()
+      } catch (error) {
+        console.error('Auth check error:', error)
+        router.push('/login')
+      } finally {
+        setLoading(false)
       }
-    })
-    return () => {
-      authListener?.subscription.unsubscribe()
     }
-  }, [])
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    checkUser()
+  }, [router])
 
+  const fetchStats = async () => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      // Hämta leads
+      const { data: leads, error: leadsError } = await supabase
+        .from('leads')
+        .select('*')
+        .order('created_at', { ascending: false })
 
-      if (error) {
-        setError(error.message)
+      if (leadsError) {
+        console.error('Error fetching leads:', leadsError)
+        return
       }
-      // Ingen redirect här! onAuthStateChange löser det.
-    } catch {
-      setError('Ett oväntat fel inträffade')
-    } finally {
-      setLoading(false)
+
+      // Hämta reminders
+      const { data: reminders, error: remindersError } = await supabase
+        .from('reminders')
+        .select('*')
+        .gte('reminder_date', new Date().toISOString())
+        .order('reminder_date', { ascending: true })
+
+      if (remindersError) {
+        console.error('Error fetching reminders:', remindersError)
+        return
+      }
+
+      // Beräkna statistik
+      const now = new Date()
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      
+      const newLeads = leads?.filter(lead => 
+        new Date(lead.created_at) > weekAgo
+      ).length || 0
+
+      setStats({
+        totalLeads: leads?.length || 0,
+        newLeads,
+        upcomingReminders: reminders?.length || 0,
+        recentLeads: leads?.slice(0, 5) || []
+      })
+    } catch (error) {
+      console.error('Error fetching stats:', error)
     }
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Logga in</CardTitle>
-          <CardDescription>
-            Ange dina uppgifter för att komma åt ditt konto
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <Label htmlFor="email">E-postadress</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="mt-1"
-                placeholder="din@epost.se"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="password">Lösenord</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="mt-1"
-                placeholder="••••••••"
-              />
-            </div>
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Laddar...</div>
+      </div>
+    )
+  }
 
-            {error && (
-              <div className="text-red-600 text-sm">{error}</div>
-            )}
+  if (!user || !stats) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Kunde inte ladda data</div>
+      </div>
+    )
+  }
 
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={loading}
-            >
-              {loading ? 'Loggar in...' : 'Logga in'}
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Har du inget konto?{' '}
-              <Link href="/register" className="text-blue-600 hover:underline">
-                Registrera dig
-              </Link>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
+  return <ModernDashboard user={user} stats={stats} />
 }
