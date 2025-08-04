@@ -14,6 +14,13 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 
 export async function POST(request: NextRequest) {
   try {
+    // Debug logging
+    console.log('Environment check:', {
+      hasUrl: !!supabaseUrl,
+      hasServiceKey: !!supabaseServiceKey,
+      urlValue: supabaseUrl?.substring(0, 20) + '...'
+    })
+
     const { name, email, password, companyName } = await request.json()
 
     // Validera input
@@ -21,6 +28,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Alla fält måste fyllas i' },
         { status: 400 }
+      )
+    }
+
+    // Validera environment variables
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing environment variables:', {
+        hasUrl: !!supabaseUrl,
+        hasServiceKey: !!supabaseServiceKey
+      })
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
       )
     }
 
