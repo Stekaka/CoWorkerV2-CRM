@@ -14,7 +14,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  console.log('LoginPage rendered, current state:', { email, password: '***', loading, error })
+
   const handleLogin = async (e: React.FormEvent) => {
+    console.log('handleLogin called!')
     e.preventDefault()
     setLoading(true)
     setError('')
@@ -93,6 +96,7 @@ export default function LoginPage() {
               type="submit" 
               className="w-full" 
               disabled={loading}
+              onClick={() => console.log('Button clicked!')}
             >
               {loading ? 'Loggar in...' : 'Logga in'}
             </Button>
