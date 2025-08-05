@@ -61,7 +61,7 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <div className="space-y-4">
             <div>
               <Label htmlFor="email">E-postadress</Label>
               <Input
@@ -93,14 +93,17 @@ export default function LoginPage() {
             )}
 
             <Button 
-              type="submit" 
+              type="button"
               className="w-full" 
               disabled={loading}
-              onClick={() => console.log('Button clicked!')}
+              onClick={() => {
+                console.log('Button clicked directly!')
+                handleLogin({ preventDefault: () => {} } as React.FormEvent)
+              }}
             >
               {loading ? 'Loggar in...' : 'Logga in'}
             </Button>
-          </form>
+          </div>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
