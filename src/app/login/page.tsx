@@ -37,11 +37,18 @@ export default function LoginPage() {
         setError(error.message)
       } else {
         console.log('Login successful, redirecting...')
+        console.log('Session data:', data.session)
+        console.log('User data:', data.user)
+        
+        // Verifiera att sessionen verkligen är sparad
+        const { data: sessionCheck } = await supabase.auth.getSession()
+        console.log('Session verification:', sessionCheck)
+        
         // Vänta lite innan redirect
         setTimeout(() => {
           console.log('Executing redirect to dashboard')
           window.location.href = '/dashboard'
-        }, 1000)
+        }, 1500)
       }
     } catch (err) {
       console.error('Login exception:', err)

@@ -1,21 +1,11 @@
-import { requireAuth } from '@/lib/auth'
-import DashboardNav from '@/components/dashboard/dashboard-nav'
-
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const user = await requireAuth()
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardNav user={user} />
-      <main className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {children}
-        </div>
-      </main>
+    <div className="min-h-screen">
+      {children}
     </div>
   )
 }

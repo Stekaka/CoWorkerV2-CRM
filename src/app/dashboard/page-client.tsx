@@ -33,15 +33,28 @@ export default function DashboardPage() {
   useEffect(() => {
     const checkAuth = async () => {
       console.log('Dashboard: Checking auth...')
+      console.log('Dashboard: Current URL:', window.location.href)
+      
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
         
-        console.log('Dashboard: Session result:', { session: !!session, error })
+        console.log('Dashboard: Raw session data:', session)
+        console.log('Dashboard: Session error:', error)
+        console.log('Dashboard: Session exists:', !!session)
+        console.log('Dashboard: User exists:', !!session?.user)
+        console.log('Dashboard: User ID:', session?.user?.id)
+        console.log('Dashboard: User email:', session?.user?.email)
+        
+        if (error) {
+          console.error('Dashboard: Session error details:', error)
+        }
         
         if (error || !session?.user) {
           console.log('Dashboard: No valid session, redirecting to login')
+          console.log('Dashboard: Redirect reason - Error:', !!error, 'No session:', !session, 'No user:', !session?.user)
           // Ge lite tid innan redirect
           setTimeout(() => {
+            console.log('Dashboard: Executing redirect to login')
             window.location.href = '/login'
           }, 100)
           return
@@ -60,7 +73,10 @@ export default function DashboardPage() {
         await fetchStats()
       } catch (error) {
         console.error('Dashboard: Auth check error:', error)
-        window.location.href = '/login'
+        setTimeout(() => {
+          console.log('Dashboard: Exception caught, redirecting to login')
+          window.location.href = '/login'
+        }, 100)
       } finally {
         setLoading(false)
       }
@@ -80,6 +96,14 @@ export default function DashboardPage() {
 
       if (leadsError) {
         console.error('Error fetching leads:', leadsError)
+        console.log('Dashboard: Using default stats due to leads error')
+        // Använd dummy-data om tabellerna inte finns
+        setStats({
+          totalLeads: 0,
+          newLeads: 0,
+          upcomingReminders: 0,
+          recentLeads: []
+        })
         return
       }
 
@@ -92,6 +116,21 @@ export default function DashboardPage() {
 
       if (remindersError) {
         console.error('Error fetching reminders:', remindersError)
+        console.log('Dashboard: Using partial stats due to reminders error')
+        // Använd data från leads men 0 reminders
+        const now = new Date()
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+        
+        const newLeads = leads?.filter(lead => 
+          new Date(lead.created_at) > weekAgo
+        ).length || 0
+
+        setStats({
+          totalLeads: leads?.length || 0,
+          newLeads,
+          upcomingReminders: 0,
+          recentLeads: leads?.slice(0, 5) || []
+        })
         return
       }
 
@@ -110,9 +149,21 @@ export default function DashboardPage() {
         recentLeads: leads?.slice(0, 5) || []
       })
       
-      console.log('Dashboard: Stats loaded successfully')
+      console.log('Dashboard: Stats loaded successfully', {
+        totalLeads: leads?.length || 0,
+        newLeads,
+        upcomingReminders: reminders?.length || 0
+      })
     } catch (error) {
       console.error('Error fetching stats:', error)
+      console.log('Dashboard: Using default stats due to exception')
+      // Fallback till dummy-data
+      setStats({
+        totalLeads: 0,
+        newLeads: 0,
+        upcomingReminders: 0,
+        recentLeads: []
+      })
     }
   }
 
