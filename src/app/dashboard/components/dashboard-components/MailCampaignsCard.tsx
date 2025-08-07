@@ -1,18 +1,9 @@
 'use client'
 
 import { motion } from 'framer-motion'
-// import { Mail, Send, Eye, MousePointer, TrendingUp, Plus } from 'lucide-react'
+import { Mail, Send, Eye, MousePointer, TrendingUp, Plus } from 'lucide-react'
 
-interface MailCampaignsCardProps {
-  width?: number
-  height?: number
-}
-
-export default function MailCampaignsCard({ width = 480, height = 300 }: MailCampaignsCardProps) {
-  // Responsive based on preset sizes
-  const isSmall = width <= 320
-  const isMedium = width <= 480 && width > 320
-  const isLarge = width > 480
+export default function MailCampaignsCard() {
   const campaigns = [
     {
       id: 1,
@@ -83,61 +74,65 @@ export default function MailCampaignsCard({ width = 480, height = 300 }: MailCam
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4, duration: 0.5 }}
-      className="bg-slate-900/50 backdrop-blur border border-slate-800/50 rounded-2xl p-6 hover:bg-slate-800/30 transition-all duration-300"
+      className="bg-slate-900/50 backdrop-blur border border-slate-800/50 rounded-2xl p-4 sm:p-6 hover:bg-slate-800/30 transition-all duration-300"
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg">
-            <span className="text-lg">✉️</span>
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg flex-shrink-0">
+            <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-slate-100">Mail Kampanjer</h2>
-            <p className="text-slate-400 text-sm">E-postmarknadsföring och uppföljning</p>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-100 truncate">Mail Kampanjer</h2>
+            <p className="text-slate-400 text-sm hidden sm:block">E-postmarknadsföring och uppföljning</p>
           </div>
         </div>
         
         <motion.button 
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="w-8 h-8 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 flex items-center justify-center transition-colors"
+          className="w-8 h-8 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 flex items-center justify-center transition-colors flex-shrink-0"
         >
-          <span className="text-sm">➕</span>
+          <Plus className="w-4 h-4" />
         </motion.button>
       </div>
 
       {/* Performance Metrics */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
-        <div className="text-center p-3 bg-slate-800/30 rounded-lg">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <div className="text-center p-2 sm:p-3 bg-slate-800/30 rounded-lg">
           <div className="flex items-center justify-center gap-1 mb-1">
-            <span className="text-xs">📤</span>
-            <span className="text-xs text-slate-400">Skickade</span>
+            <Send className="w-3 h-3 text-cyan-400" />
+            <span className="text-xs text-slate-400 hidden sm:inline">Skickade</span>
           </div>
-          <div className="text-lg font-bold text-slate-100">{totalSent.toLocaleString()}</div>
+          <div className="text-sm sm:text-lg font-bold text-slate-100">{totalSent.toLocaleString()}</div>
+          <div className="text-xs text-slate-400 sm:hidden">Skickade</div>
         </div>
         
-        <div className="text-center p-3 bg-slate-800/30 rounded-lg">
+        <div className="text-center p-2 sm:p-3 bg-slate-800/30 rounded-lg">
           <div className="flex items-center justify-center gap-1 mb-1">
-            <span className="text-xs">👁️</span>
-            <span className="text-xs text-slate-400">Öppnade</span>
+            <Eye className="w-3 h-3 text-emerald-400" />
+            <span className="text-xs text-slate-400 hidden sm:inline">Öppnade</span>
           </div>
-          <div className="text-lg font-bold text-emerald-400">{openRate}%</div>
+          <div className="text-sm sm:text-lg font-bold text-emerald-400">{openRate}%</div>
+          <div className="text-xs text-slate-400 sm:hidden">Öppnade</div>
         </div>
         
-        <div className="text-center p-3 bg-slate-800/30 rounded-lg">
+        <div className="text-center p-2 sm:p-3 bg-slate-800/30 rounded-lg">
           <div className="flex items-center justify-center gap-1 mb-1">
-            <span className="text-xs">👆</span>
-            <span className="text-xs text-slate-400">Klickade</span>
+            <MousePointer className="w-3 h-3 text-violet-400" />
+            <span className="text-xs text-slate-400 hidden sm:inline">Klickade</span>
           </div>
-          <div className="text-lg font-bold text-violet-400">{clickRate}%</div>
+          <div className="text-sm sm:text-lg font-bold text-violet-400">{clickRate}%</div>
+          <div className="text-xs text-slate-400 sm:hidden">Klickade</div>
         </div>
         
-        <div className="text-center p-3 bg-slate-800/30 rounded-lg">
+        <div className="text-center p-2 sm:p-3 bg-slate-800/30 rounded-lg">
           <div className="flex items-center justify-center gap-1 mb-1">
-            <span className="text-xs">📈</span>
-            <span className="text-xs text-slate-400">Svar</span>
+            <TrendingUp className="w-3 h-3 text-amber-400" />
+            <span className="text-xs text-slate-400 hidden sm:inline">Svar</span>
           </div>
-          <div className="text-lg font-bold text-amber-400">{replyRate}%</div>
+          <div className="text-sm sm:text-lg font-bold text-amber-400">{replyRate}%</div>
+          <div className="text-xs text-slate-400 sm:hidden">Svar</div>
         </div>
       </div>
 
@@ -150,13 +145,13 @@ export default function MailCampaignsCard({ width = 480, height = 300 }: MailCam
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 + index * 0.1, duration: 0.3 }}
-            className="p-4 bg-slate-800/40 rounded-lg border border-slate-700/30 hover:border-slate-600/50 hover:bg-slate-700/40 transition-all duration-200 cursor-pointer group"
+            className="p-3 sm:p-4 bg-slate-800/40 rounded-lg border border-slate-700/30 hover:border-slate-600/50 hover:bg-slate-700/40 transition-all duration-200 cursor-pointer group"
           >
             <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-semibold text-slate-100 text-sm">{campaign.name}</h4>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}>
+                  <h4 className="font-semibold text-slate-100 text-sm truncate">{campaign.name}</h4>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${getStatusColor(campaign.status)}`}>
                     {getStatusText(campaign.status)}
                   </span>
                 </div>
@@ -168,7 +163,7 @@ export default function MailCampaignsCard({ width = 480, height = 300 }: MailCam
             </div>
             
             {campaign.sent > 0 && (
-              <div className="grid grid-cols-4 gap-2 mt-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
                 <div className="text-center">
                   <div className="text-xs font-medium text-slate-100">{campaign.sent}</div>
                   <div className="text-xs text-slate-500">Skickade</div>
@@ -208,7 +203,7 @@ export default function MailCampaignsCard({ width = 480, height = 300 }: MailCam
             whileTap={{ scale: 0.98 }}
             className="p-3 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg text-slate-300 text-sm flex items-center justify-center gap-2 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-200"
           >
-            <span className="text-sm">➕</span>
+            <Plus className="w-4 h-4" />
             Ny kampanj
           </motion.button>
           <motion.button 
@@ -216,7 +211,7 @@ export default function MailCampaignsCard({ width = 480, height = 300 }: MailCam
             whileTap={{ scale: 0.98 }}
             className="p-3 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg text-slate-300 text-sm flex items-center justify-center gap-2 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-200"
           >
-            <span className="text-sm">📈</span>
+            <TrendingUp className="w-4 h-4" />
             Analytik
           </motion.button>
         </div>

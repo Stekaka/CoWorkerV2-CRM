@@ -364,13 +364,13 @@ export default function CompanySettingsSimple() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Building className="h-6 w-6 text-blue-600" />
-        <div>
-          <h1 className="text-2xl font-bold">Företagsinställningar</h1>
-          <p className="text-gray-600">Hantera användare för ditt företag</p>
+      <div className="flex items-start md:items-center gap-3">
+        <Building className="h-5 w-5 md:h-6 md:w-6 text-blue-600 mt-1 md:mt-0" />
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl md:text-2xl font-bold">Företagsinställningar</h1>
+          <p className="text-sm md:text-base text-gray-600">Hantera användare för ditt företag</p>
         </div>
       </div>
 

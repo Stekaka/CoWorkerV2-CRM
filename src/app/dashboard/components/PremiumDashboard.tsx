@@ -126,7 +126,7 @@ export default function PremiumDashboard() {
       <div className="relative z-10">
         {/* Top Navigation Bar - Minimalistisk och exklusiv */}
         <nav className="sticky top-0 z-40 backdrop-blur-xl bg-slate-950/80 border-b border-slate-800/50">
-          <div className="px-6 py-4">
+          <div className="px-4 sm:px-6 py-4">
             <div className="flex items-center justify-between">
               {/* Center - Search */}
               <div className="flex items-center flex-1 max-w-md">
@@ -134,14 +134,14 @@ export default function PremiumDashboard() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                   <input 
                     type="text"
-                    placeholder="Sök leads, aktiviteter, ordrar..."
+                    placeholder="Sök..."
                     className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-300 placeholder-slate-400 focus:border-cyan-500/50 focus:outline-none transition-colors"
                   />
                 </div>
               </div>
 
               {/* Right - Actions och notifications */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 ml-4">
                 <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
                   <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
                   {currentTime.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
@@ -172,20 +172,20 @@ export default function PremiumDashboard() {
         </nav>
 
       {/* Main Dashboard Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Welcome Header - Personal och premium */}
         <motion.div 
-          className="mb-8"
+          className="mb-6 sm:mb-8"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col gap-4">
             <div>
-              <h2 className="text-3xl font-bold text-slate-100 mb-2">
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-100 mb-2">
                 God {currentTime.getHours() < 12 ? 'morgon' : currentTime.getHours() < 18 ? 'dag' : 'kväll'} 👋
               </h2>
-              <p className="text-slate-400">
+              <p className="text-slate-400 text-sm sm:text-base">
                 Här är en översikt av dina aktiviteter för {currentTime.toLocaleDateString('sv-SE', { 
                   weekday: 'long', 
                   day: 'numeric', 
@@ -195,14 +195,14 @@ export default function PremiumDashboard() {
             </div>
             
             {/* Quick Filter Controls - Diskret men användbart */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end">
               <motion.button
                 className="flex items-center gap-2 px-3 py-2 bg-slate-800/50 text-slate-400 hover:text-slate-300 rounded-lg text-sm transition-colors"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <Filter className="w-4 h-4" />
-                Filter
+                <span className="hidden sm:inline">Filter</span>
               </motion.button>
             </div>
           </div>
@@ -213,7 +213,7 @@ export default function PremiumDashboard() {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
           <DashboardStats stats={dashboardData} />
         </motion.div>
@@ -223,30 +223,30 @@ export default function PremiumDashboard() {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8"
+          className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6 mb-6 sm:mb-8"
         >
-          {/* CRM/Leads Overview - Stor prioritet, tar 2/3 på desktop */}
-          <motion.div variants={cardVariants} className="lg:col-span-8">
+          {/* CRM/Leads Overview - Stor prioritet, full bredd på mobil */}
+          <motion.div variants={cardVariants} className="xl:col-span-8">
             <LeadsOverviewCard />
           </motion.div>
 
-          {/* Calendar & Todo - Kompakt men informativ, 1/3 på desktop */}
-          <motion.div variants={cardVariants} className="lg:col-span-4">
+          {/* Calendar & Todo - Full bredd på mobil, 1/3 på desktop */}
+          <motion.div variants={cardVariants} className="xl:col-span-4">
             <CalendarTodoCard />
           </motion.div>
 
           {/* Economy Overview - Full bredd för att visa pipeline och siffror */}
-          <motion.div variants={cardVariants} className="lg:col-span-12">
+          <motion.div variants={cardVariants} className="xl:col-span-12">
             <EconomyOverviewCard />
           </motion.div>
 
-          {/* Mail Campaigns - Halvbredd, jämn vikt med Recent Activities */}
-          <motion.div variants={cardVariants} className="lg:col-span-6">
+          {/* Mail Campaigns - Full bredd på mobil, halvbredd på desktop */}
+          <motion.div variants={cardVariants} className="xl:col-span-6">
             <MailCampaignsCard />
           </motion.div>
 
-          {/* Recent Activities - Halvbredd, kompletterar Mail Campaigns */}
-          <motion.div variants={cardVariants} className="lg:col-span-6">
+          {/* Recent Activities - Full bredd på mobil, halvbredd på desktop */}
+          <motion.div variants={cardVariants} className="xl:col-span-6">
             <RecentActivitiesCard />
           </motion.div>
         </motion.div>

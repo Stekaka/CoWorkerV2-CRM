@@ -1,35 +1,24 @@
 'use client'
 
 import { motion } from 'framer-motion'
-// import { Activity, Phone, Mail, Calendar, FileText, User, Clock } from 'lucide-react'
+import { Activity, Phone, Mail, Calendar, FileText, User, Clock } from 'lucide-react'
 
 // Temporary inline data until import issues are resolved
 const useDashboardData = () => ({
   recentActivities: [] as any[]
 })
 
-interface RecentActivitiesCardProps {
-  width?: number
-  height?: number
-}
-
-export default function RecentActivitiesCard({ width = 470, height = 300 }: RecentActivitiesCardProps) {
+export default function RecentActivitiesCard() {
   const { recentActivities } = useDashboardData()
-  
-  // Responsive based on preset sizes
-  const isSmall = width <= 320
-  const isMedium = width <= 480 && width > 320
-  const isLarge = width > 480
-  
   const activities = recentActivities || []
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'call': return '📞'
-      case 'email': return '✉️'
-      case 'meeting': return '📅'
-      case 'task': return '📄'
-      default: return '⚡'
+      case 'call': return Phone
+      case 'email': return Mail
+      case 'meeting': return Calendar
+      case 'task': return FileText
+      default: return Activity
     }
   }
 
@@ -94,42 +83,42 @@ export default function RecentActivitiesCard({ width = 470, height = 300 }: Rece
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5, duration: 0.5 }}
-      className="bg-slate-900/50 backdrop-blur border border-slate-800/50 rounded-2xl p-6 hover:bg-slate-800/30 transition-all duration-300"
+      className="bg-slate-900/50 backdrop-blur border border-slate-800/50 rounded-2xl p-4 sm:p-6 hover:bg-slate-800/30 transition-all duration-300"
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center shadow-lg">
-            <span className="text-lg">⚡</span>
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center shadow-lg flex-shrink-0">
+            <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-slate-100">Senaste Aktiviteter</h2>
-            <p className="text-slate-400 text-sm">Samtal, möten och uppföljningar</p>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-100 truncate">Senaste Aktiviteter</h2>
+            <p className="text-slate-400 text-sm hidden sm:block">Samtal, möten och uppföljningar</p>
           </div>
         </div>
         
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <span className="text-sm">🕐</span>
-          Live feed
+        <div className="flex items-center gap-2 text-xs text-slate-400 flex-shrink-0">
+          <Clock className="w-4 h-4" />
+          <span className="hidden sm:inline">Live feed</span>
         </div>
       </div>
 
       {/* Activity Summary */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
-        <div className="text-center p-3 bg-slate-800/30 rounded-lg">
-          <div className="text-lg font-bold text-slate-100">12</div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <div className="text-center p-2 sm:p-3 bg-slate-800/30 rounded-lg">
+          <div className="text-sm sm:text-lg font-bold text-slate-100">12</div>
           <div className="text-xs text-slate-400">Idag</div>
         </div>
-        <div className="text-center p-3 bg-slate-800/30 rounded-lg">
-          <div className="text-lg font-bold text-emerald-400">8</div>
+        <div className="text-center p-2 sm:p-3 bg-slate-800/30 rounded-lg">
+          <div className="text-sm sm:text-lg font-bold text-emerald-400">8</div>
           <div className="text-xs text-slate-400">Samtal</div>
         </div>
-        <div className="text-center p-3 bg-slate-800/30 rounded-lg">
-          <div className="text-lg font-bold text-cyan-400">15</div>
+        <div className="text-center p-2 sm:p-3 bg-slate-800/30 rounded-lg">
+          <div className="text-sm sm:text-lg font-bold text-cyan-400">15</div>
           <div className="text-xs text-slate-400">E-post</div>
         </div>
-        <div className="text-center p-3 bg-slate-800/30 rounded-lg">
-          <div className="text-lg font-bold text-violet-400">3</div>
+        <div className="text-center p-2 sm:p-3 bg-slate-800/30 rounded-lg">
+          <div className="text-sm sm:text-lg font-bold text-violet-400">3</div>
           <div className="text-xs text-slate-400">Möten</div>
         </div>
       </div>
@@ -150,7 +139,7 @@ export default function RecentActivitiesCard({ width = 470, height = 300 }: Rece
               >
                 {/* Activity Icon */}
                 <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${getActivityColor(activity.type)} flex items-center justify-center flex-shrink-0`}>
-                  <span className="text-sm">{IconComponent}</span>
+                  <IconComponent className="w-4 h-4 text-white" />
                 </div>
                 
                 {/* Activity Content */}
@@ -168,7 +157,7 @@ export default function RecentActivitiesCard({ width = 470, height = 300 }: Rece
                   
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="text-xs">👤</span>
+                      <User className="w-3 h-3 text-slate-500" />
                       <span className="text-slate-500">{activity.contact}</span>
                     </div>
                     
@@ -196,7 +185,7 @@ export default function RecentActivitiesCard({ width = 470, height = 300 }: Rece
             whileTap={{ scale: 0.98 }}
             className="p-3 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg text-slate-300 text-sm flex items-center justify-center gap-2 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-200"
           >
-            <span className="text-sm">📞</span>
+            <Phone className="w-4 h-4" />
             Nytt samtal
           </motion.button>
           <motion.button 
@@ -204,7 +193,7 @@ export default function RecentActivitiesCard({ width = 470, height = 300 }: Rece
             whileTap={{ scale: 0.98 }}
             className="p-3 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg text-slate-300 text-sm flex items-center justify-center gap-2 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-200"
           >
-            <span className="text-sm">⚡</span>
+            <Activity className="w-4 h-4" />
             Visa alla
           </motion.button>
         </div>

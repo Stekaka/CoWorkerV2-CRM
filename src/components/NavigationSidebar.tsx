@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Home, 
@@ -15,16 +15,15 @@ import {
   Building2,
   Mail,
   Target,
-  Zap
+  Zap,
+  Menu,
+  X
 } from 'lucide-react'
 import Link from 'next/link'
 
 interface NavigationSidebarProps {
   activeSection?: string
-  onSectionChange?: (section: string) => void
-  currentTime?: Date
-  isDragMode?: boolean
-  onToggleDragMode?: () => void
+  setActiveSection?: (section: string) => void
 }
 
 interface NavItem {
@@ -39,15 +38,35 @@ interface NavItem {
   }[]
 }
 
-export default function NavigationSidebar({ 
-  activeSection = 'dashboard', 
-  onSectionChange, 
-  currentTime, 
-  isDragMode, 
-  onToggleDragMode 
-}: NavigationSidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false)
+export default function NavigationSidebar({
+  activeSection,
+  setActiveSection
+}: NavigationSidebarProps) {  const [isCollapsed, setIsCollapsed] = useState(false)
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  // Close mobile menu when clicking outside or on link
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (isMobileMenuOpen) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isMobileMenuOpen])
 
   const navigationItems: NavItem[] = [
     {
@@ -163,8 +182,8 @@ export default function NavigationSidebar({
   ]
 
   const handleMenuClick = (itemId: string) => {
-    if (onSectionChange) {
-      onSectionChange(itemId)
+    if (setActiveSection) {
+      setActiveSection(itemId)
     }
     
     // Toggle submenu expansion
@@ -173,14 +192,55 @@ export default function NavigationSidebar({
     } else {
       setExpandedMenu(itemId)
     }
+    
+    // Close mobile menu when item is clicked
+    setIsMobileMenuOpen(false)
+  }
+
+  const handleLinkClick = () => {
+    setIsMobileMenuOpen(false)
   }
 
   return (
-    <motion.div
-      initial={false}
-      animate={{ width: isCollapsed ? '80px' : '280px' }}
-      className="bg-gradient-to-b from-slate-800 to-slate-900 border-r border-slate-700 flex flex-col h-screen sticky top-0"
-    >
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-slate-800 text-white rounded-lg shadow-lg"
+        onClick={(e) => {
+          e.stopPropagation()
+          setIsMobileMenuOpen(!isMobileMenuOpen)
+        }}
+      >
+        {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="md:hidden fixed inset-0 bg-black/50 z-40"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <motion.div
+        initial={false}
+        animate={{ 
+          width: isCollapsed ? '80px' : '280px'
+        }}
+        className={`
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} 
+          lg:translate-x-0 lg:relative fixed top-0 left-0 z-40
+          bg-gradient-to-b from-slate-800 to-slate-900 border-r border-slate-700 
+          flex flex-col h-screen transition-transform duration-300 ease-in-out
+        `}
+        onClick={(e) => e.stopPropagation()}
+      >
       {/* Header */}
       <div className="p-6 border-b border-slate-700">
         {!isCollapsed ? (
@@ -225,7 +285,11 @@ export default function NavigationSidebar({
               whileTap={{ scale: 0.98 }}
             >
               {item.id === 'dashboard' ? (
-                <Link href="/dashboard" className="w-full flex items-center gap-3">
+                <Link 
+                  href="/dashboard" 
+                  className="w-full flex items-center gap-3"
+                  onClick={handleLinkClick}
+                >
                   <item.icon className={`w-5 h-5 ${isCollapsed ? 'mx-auto' : ''}`} />
                   {!isCollapsed && (
                     <>
@@ -279,6 +343,7 @@ export default function NavigationSidebar({
                       <Link
                         key={subItem.id}
                         href={subItem.href}
+                        onClick={handleLinkClick}
                         className="block p-2 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/30 rounded-lg transition-colors duration-200 text-sm"
                       >
                         {subItem.label}
@@ -311,5 +376,6 @@ export default function NavigationSidebar({
         </motion.button>
       </div>
     </motion.div>
+    </>
   )
 }
