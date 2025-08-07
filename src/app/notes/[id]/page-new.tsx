@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Save, Share, MoreVertical, Star, Archive, Trash } from 'lucide-react'
-import NoteEditor, { Block } from '@/components/notes/NoteEditor'
+import NoteEditor from '@/components/notes/NoteEditor-simple'
 import { useNote } from '@/hooks/useAPI'
 import { NoteBlock } from '@/lib/supabase'
 
