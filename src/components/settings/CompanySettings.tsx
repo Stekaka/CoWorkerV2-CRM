@@ -30,7 +30,7 @@ interface Module {
 
 interface OrganizationModule {
   id: string;
-  organization_id: string;
+  company_id: string;
   module_name: string;
   is_enabled: boolean;
   purchased_at: string;
@@ -190,7 +190,7 @@ export default function CompanySettings() {
       const { data: orgModules, error: orgModulesError } = await supabase
         .from('organization_modules')
         .select('*')
-        .eq('organization_id', profile.organization_id);
+        .eq('organization_id', profile.company_id);
 
       if (orgModulesError) {
         console.error('Error loading organization modules:', orgModulesError);
@@ -202,7 +202,7 @@ export default function CompanySettings() {
       const { data: users, error: usersError } = await supabase
         .from('user_profiles')
         .select('*')
-        .eq('organization_id', profile.organization_id)
+        .eq('organization_id', profile.company_id)
         .order('created_at');
 
       if (usersError) {
@@ -215,7 +215,7 @@ export default function CompanySettings() {
       const { data: moduleAccess, error: moduleAccessError } = await supabase
         .from('user_module_access')
         .select('*')
-        .eq('organization_id', profile.organization_id);
+        .eq('organization_id', profile.company_id);
 
       if (moduleAccessError) {
         console.error('Error loading module access:', moduleAccessError);
@@ -248,7 +248,7 @@ export default function CompanySettings() {
         await supabase
           .from('organization_modules')
           .insert({
-            organization_id: userProfile.organization_id,
+            organization_id: userProfile.company_id,
             module_name: moduleName,
             is_enabled: true
           });
@@ -257,14 +257,14 @@ export default function CompanySettings() {
         await supabase
           .from('organization_modules')
           .delete()
-          .eq('organization_id', userProfile.organization_id)
+          .eq('organization_id', userProfile.company_id)
           .eq('module_name', moduleName);
 
         // Also remove user access to this module
         await supabase
           .from('user_module_access')
           .delete()
-          .eq('organization_id', userProfile.organization_id)
+          .eq('organization_id', userProfile.company_id)
           .eq('module_name', moduleName);
       }
 
@@ -285,7 +285,7 @@ export default function CompanySettings() {
           .from('user_module_access')
           .insert({
             user_id: userId,
-            organization_id: userProfile.organization_id,
+            organization_id: userProfile.company_id,
             module_name: moduleName,
             granted_by: user?.id,
             is_active: true
@@ -296,7 +296,7 @@ export default function CompanySettings() {
           .from('user_module_access')
           .delete()
           .eq('user_id', userId)
-          .eq('organization_id', userProfile.organization_id)
+          .eq('organization_id', userProfile.company_id)
           .eq('module_name', moduleName);
       }
 
@@ -314,7 +314,7 @@ export default function CompanySettings() {
       // Use the invite function from our migration
       const { error } = await supabase.rpc('invite_user_to_organization', {
         p_email: inviteEmail.trim(),
-        p_organization_id: userProfile.organization_id,
+        p_organization_id: userProfile.company_id,
         p_role: inviteRole,
         p_modules: selectedModulesForInvite
       });
@@ -345,7 +345,7 @@ export default function CompanySettings() {
           .from('user_profiles')
           .delete()
           .eq('user_id', userId)
-          .eq('organization_id', userProfile.organization_id);
+          .eq('organization_id', userProfile.company_id);
 
         // Reload data
         await loadData(user);
@@ -564,7 +564,7 @@ export default function CompanySettings() {
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="font-medium">
-                            {companyUser.full_name || companyUser.email}
+                            {companyUser.name || companyUser.email}
                           </h3>
                           <Badge 
                             variant={companyUser.role === 'admin' ? 'default' : 'secondary'}

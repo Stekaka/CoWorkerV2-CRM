@@ -102,12 +102,13 @@ export default function CompanySettingsSimple() {
         if (currentUser.email === 'oliver@dronarkompaniet.se') {
           try {
             // First create or get company
-            let { data: org, error: orgError } = await supabase
+            const { data: org, error: orgError } = await supabase
               .from('companies')
               .select('*')
               .eq('name', 'Drönarkompaniet')
               .single();
 
+            let company = org;
             if (orgError || !org) {
               const { data: newOrg, error: createOrgError } = await supabase
                 .from('companies')
@@ -118,7 +119,7 @@ export default function CompanySettingsSimple() {
                 .single();
 
               if (createOrgError) throw createOrgError;
-              org = newOrg;
+              company = newOrg;
             }
 
             // Create user profile
@@ -127,7 +128,7 @@ export default function CompanySettingsSimple() {
               .insert({
                 id: currentUser.id,
                 email: currentUser.email,
-                company_id: org.id,
+                company_id: company.id,
                 role: 'admin',
                 name: 'Oliver Eriksson'
               })
@@ -136,7 +137,7 @@ export default function CompanySettingsSimple() {
 
             if (createProfileError) throw createProfileError;
             setUserProfile(newProfile);
-            setCompany(org);
+            setCompany(company);
           } catch (createError) {
             console.error('Error creating profile for Oliver:', createError);
             setLoading(false);
@@ -486,17 +487,15 @@ export default function CompanySettingsSimple() {
           {!isAdmin ? (
             <p className="text-gray-600">Endast administratörer kan hantera moduler.</p>
           ) : !showModules ? (
-            <p className="text-gray-600">Klicka "Visa moduler" för att hantera tillgängliga funktioner.</p>
+            <p className="text-gray-600">Klicka &quot;Visa moduler&quot; för att hantera tillgängliga funktioner.</p>
           ) : (
             <div className="space-y-4">
-              <p className="text-sm text-gray-600 mb-4">
-                Hantera vilka moduler som är aktiva för ditt företag. Aktiva moduler kostar {' '}
-                <span className="font-medium">
-                  {availableModules.filter(m => m.is_enabled).reduce((sum, m) => sum + m.price, 0)} kr/månad
-                </span>
-              </p>
-              
-              {availableModules.map(module => (
+                <p className="text-sm text-gray-600 mb-4">
+                  Hantera vilka moduler som är aktiva för ditt företag. Aktiva moduler kostar{' '}
+                  <span className="font-medium">
+                    {availableModules.filter(m => m.is_enabled).reduce((sum, m) => sum + m.price, 0)} kr/månad
+                  </span>
+                </p>              {availableModules.map(module => (
                 <div key={module.name} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
