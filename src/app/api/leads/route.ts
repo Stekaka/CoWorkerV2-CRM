@@ -1,83 +1,53 @@
-import { createClient } from '@/lib/supabase-server'
 import { NextRequest, NextResponse } from 'next/server'
+import { leadsAPI } from '@/lib/api'
 
-export async function GET() {
+// GET /api/leads - Get all leads
+export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient()
-    
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const { searchParams } = new URL(request.url)
+    const status = searchParams.get('status')
+    const tags = searchParams.get('tags')?.split(',').filter(Boolean)
+    const search = searchParams.get('search')
+
+    const filters = {
+      ...(status && { status }),
+      ...(tags && { tags }),
+      ...(search && { search })
     }
 
-    const { data: userData } = await supabase
-      .from('users')
-      .select('company_id')
-      .eq('id', user.id)
-      .single()
-
-    if (!userData) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    const { data: leads, error } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('company_id', userData.company_id)
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
+    const leads = await leadsAPI.getAll(filters)
     return NextResponse.json(leads)
-  } catch {
+  } catch (error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Failed to fetch leads' },
       { status: 500 }
     )
   }
 }
 
+// POST /api/leads - Create a new lead
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient()
-    
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: userData } = await supabase
-      .from('users')
-      .select('company_id')
-      .eq('id', user.id)
-      .single()
-
-    if (!userData) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
     const body = await request.json()
-    
-    const { data: lead, error } = await supabase
-      .from('leads')
-      .insert([{
-        ...body,
-        company_id: userData.company_id,
-        assigned_to: user.id
-      }])
-      .select()
-      .single()
+    const { name, email, phone, company, status, tags, notes } = body
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+    if (!name || !email) {
+      return NextResponse.json({ error: 'Name and email are required' }, { status: 400 })
     }
 
+    const lead = await leadsAPI.create({
+      name,
+      email,
+      phone,
+      company,
+      status,
+      tags,
+      notes
+    })
     return NextResponse.json(lead, { status: 201 })
-  } catch {
+  } catch (error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Failed to create lead' },
       { status: 500 }
     )
   }
