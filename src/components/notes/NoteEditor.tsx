@@ -37,6 +37,23 @@ export default function NoteEditor({
   onChange,
   placeholder = "Börja skriva eller tryck '/' för kommandon..."
 }: NoteEditorProps) {
+  // Helper function to convert content to TodoContent format
+  const toTodoContent = (content: unknown) => {
+    if (typeof content === 'string') {
+      return { text: content, checked: false }
+    }
+    if (typeof content === 'object' && content !== null) {
+      const obj = content as Record<string, unknown>
+      return {
+        text: String(obj.text || ''),
+        checked: Boolean(obj.checked || obj.completed || false),
+        priority: obj.priority as 'low' | 'medium' | 'high' | undefined,
+        dueDate: obj.dueDate as Date | undefined,
+        assignedTo: obj.assignedTo as string | undefined
+      }
+    }
+    return { text: '', checked: false }
+  }
   const [blocks, setBlocks] = useState<NoteBlock[]>(initialBlocks.length > 0 ? initialBlocks : [
     {
       id: 'initial',
@@ -52,16 +69,36 @@ export default function NoteEditor({
   const blockRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
 
   const updateBlocks = useCallback((newBlocks: NoteBlock[]) => {
-    setBlocks(newBlocks)
-    onChange?.(newBlocks)
+    // Convert TodoContent objects back to strings for database storage
+    const normalizedBlocks = newBlocks.map(block => {
+      if (block.type === 'todo' && typeof block.content === 'object' && block.content !== null) {
+        // Convert TodoContent object back to string for storage
+        const todoContent = block.content as any
+        return {
+          ...block,
+          content: todoContent.text || '',
+          data: {
+            ...block.data,
+            checked: todoContent.checked || false,
+            priority: todoContent.priority,
+            dueDate: todoContent.dueDate,
+            assignedTo: todoContent.assignedTo
+          }
+        }
+      }
+      return block
+    })
+    
+    setBlocks(normalizedBlocks)
+    onChange?.(normalizedBlocks)
   }, [onChange])
 
   const addBlock = (afterId: string, type: NoteBlock['type'] = 'text') => {
     const newBlock: NoteBlock = {
       id: `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       type,
-      content: type === 'todo' ? '' : '',
-      data: type === 'todo' ? { text: '', checked: false } : type === 'heading' ? { level: 2 } : {}
+      content: '',
+      data: type === 'heading' ? { level: 2 } : {}
     }
 
     const currentIndex = blocks.findIndex(block => block.id === afterId)
@@ -110,7 +147,20 @@ export default function NoteEditor({
       addBlock(blockId, 'text')
     } else if (e.key === 'Backspace') {
       const block = blocks.find(b => b.id === blockId)
-      if (block?.content === '' || (block?.type === 'todo' && block.data && typeof block.data === 'object' && 'text' in block.data && block.data.text === '')) {
+      // Check if block is empty based on type
+      let isEmpty = false
+      if (block?.type === 'todo') {
+        // For todo blocks, check if stored as string or TodoContent
+        if (typeof block.content === 'string') {
+          isEmpty = !block.content.trim()
+        } else if (typeof block.content === 'object' && block.content) {
+          isEmpty = !(block.content as any).text?.trim()
+        }
+      } else {
+        isEmpty = !block?.content
+      }
+      
+      if (isEmpty) {
         e.preventDefault()
         deleteBlock(blockId)
       }
@@ -153,10 +203,8 @@ export default function NoteEditor({
       case 'heading':
         return <HeadingBlock {...commonProps} />
       case 'todo':
-        // Ensure todo content is in the right format
-        const todoContent = typeof block.content === 'string' 
-          ? { text: block.content, completed: false }
-          : block.content
+        // Convert content to TodoContent format using helper
+        const todoContent = toTodoContent(block.content)
         return <TodoBlockComponent 
           {...commonProps} 
           block={{...block, content: todoContent} as any}

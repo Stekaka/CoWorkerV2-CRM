@@ -3,14 +3,15 @@
 'use client';
 
 import { PermissionsProvider } from '@/providers/PermissionsProvider';
-import { useAuth } from '@/your-auth-context'; // Din befintliga auth
+// import { useAuth } from '@/contexts/AuthContext'; // Ersätt med din befintliga auth context
 
 export default function RootLayoutWithPermissions({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = useAuth(); // Din befintliga user context
+  // const { user } = useAuth(); // Uncomment när din auth context är klar
+  const user = null; // Tillfällig fallback
   
   return (
     <PermissionsProvider user={user}>
