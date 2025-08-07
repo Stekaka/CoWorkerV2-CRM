@@ -5,31 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Save, Share, MoreVertical, Star, Archive, Trash } from 'lucide-react'
 import NoteEditor, { Block } from '@/components/notes/NoteEditor'
-
-interface Note {
-  id: string
-  title: string
-  content: string
-  blocks: Array<{
-    id: string
-    type: string
-    content: string
-    metadata?: any
-  }>
-  tags: string[]
-  priority: 'low' | 'medium' | 'high'
-  isPinned: boolean
-  isArchived: boolean
-  linkedEntities: Array<{
-    type: 'contact' | 'lead' | 'project'
-    id: string
-    name: string
-  }>
-  createdAt: string
-  updatedAt: string
-  hasUrgentTodos?: boolean
-  blocksCount?: number
-}
+import { Note, normalizeNote } from '@/utils/noteUtils'
 
 // Typ-säker konvertering från rå data till Block[]
 const convertToBlocks = (rawBlocks: Array<{ id: string; type: string; content: string; metadata?: any }>): Block[] => {
@@ -52,39 +28,6 @@ const convertToBlocks = (rawBlocks: Array<{ id: string; type: string; content: s
     .filter(Boolean); // Ta bort eventuella null/undefined värden
 };
 
-// Typ för partiella Note-objekt från backend
-type PartialNote = Omit<Note, 'hasUrgentTodos' | 'blocksCount'> & {
-  hasUrgentTodos?: boolean;
-  blocksCount?: number;
-};
-
-// Normalisera notes från backend och sätt default-värden för saknade fält
-const normalizeNotes = (notes: PartialNote[]): Note[] => {
-  return notes.map(note => ({
-    ...note,
-    hasUrgentTodos: note.hasUrgentTodos ?? checkHasUrgentTodos(note.blocks),
-    blocksCount: note.blocksCount ?? note.blocks.length
-  }));
-};
-
-// Normalisera en enskild note
-const normalizeNote = (note: PartialNote): Note => {
-  return {
-    ...note,
-    hasUrgentTodos: note.hasUrgentTodos ?? checkHasUrgentTodos(note.blocks),
-    blocksCount: note.blocksCount ?? note.blocks.length
-  };
-};
-
-// Hjälpfunktion för att kontrollera om note har urgenta todos
-const checkHasUrgentTodos = (blocks: Note['blocks']): boolean => {
-  return blocks.some(block => 
-    block.type === 'todo' && 
-    !block.metadata?.checked && 
-    (block.metadata?.urgent === true || block.content.includes('!'))
-  );
-};
-
 export default function EditNotePage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [note, setNote] = useState<Note | null>(null)
@@ -98,7 +41,7 @@ export default function EditNotePage({ params }: { params: { id: string } }) {
   useEffect(() => {
     if (isNewNote) {
       // Create new note
-      const newNote: Note = {
+      const newNote = normalizeNote({
         id: Date.now().toString(),
         title: '',
         content: '',
@@ -117,14 +60,14 @@ export default function EditNotePage({ params }: { params: { id: string } }) {
         linkedEntities: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      }
+      })
       setNote(newNote)
       setTitle('')
       setIsLoading(false)
     } else {
       // Load existing note (in real app, fetch from API)
       // For now, create a mock note
-      const mockNote: Note = {
+      const mockNote = normalizeNote({
         id: params.id,
         title: 'Exempelanteckning',
         content: 'Detta är innehållet i anteckningen',
@@ -155,7 +98,7 @@ export default function EditNotePage({ params }: { params: { id: string } }) {
         ],
         createdAt: '2024-01-15T10:00:00Z',
         updatedAt: '2024-01-15T14:30:00Z'
-      }
+      });
       setNote(mockNote)
       setTitle(mockNote.title)
       setIsLoading(false)
