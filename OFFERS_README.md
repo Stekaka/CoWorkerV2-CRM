@@ -61,7 +61,7 @@ En kraftfull och flexibel offertbyggare med drag & drop funktionalitet, mallhant
 
 ### Grundläggande
 ```tsx
-import { OfferBuilder } from '@/components/offers/OfferBuilder';
+import OfferBuilder from '@/components/offers/OfferBuilder';
 
 function MyPage() {
   return (
