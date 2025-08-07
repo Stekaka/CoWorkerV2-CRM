@@ -337,8 +337,8 @@ export default function EditNotePage({ params }: { params: { id: string } }) {
           {/* Note Editor */}
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
             <NoteEditor
-              blocks={note.blocks}
-              onBlocksUpdate={handleBlocksUpdate}
+              initialBlocks={note.blocks}
+              onChange={handleBlocksUpdate}
             />
           </div>
 
