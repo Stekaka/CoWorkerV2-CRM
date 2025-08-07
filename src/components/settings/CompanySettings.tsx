@@ -9,12 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Settings, 
   Users, 
   Package, 
   Plus, 
   Trash2, 
-  Edit, 
   Check, 
   X,
   Shield,
@@ -489,7 +487,7 @@ export default function CompanySettings() {
                           .filter(om => om.is_enabled)
                           .map(orgModule => {
                             const hasAccess = hasUserModuleAccess(companyUser.user_id, orgModule.module_name);
-                            const module = availableModules.find(m => m.name === orgModule.module_name);
+                            const moduleInfo = availableModules.find(m => m.name === orgModule.module_name);
                             
                             return (
                               <div key={orgModule.module_name} className="flex items-center gap-1">
@@ -497,7 +495,7 @@ export default function CompanySettings() {
                                   variant={hasAccess ? 'default' : 'outline'}
                                   className="text-xs"
                                 >
-                                  {module?.display_name || orgModule.module_name}
+                                  {moduleInfo?.display_name || orgModule.module_name}
                                 </Badge>
                                 {isAdmin && companyUser.user_id !== user?.id && (
                                   <Button
