@@ -185,7 +185,7 @@ export default function EditNotePage({ params }: { params: { id: string } }) {
           <NoteEditor
             initialBlocks={note.content.map(block => ({
               id: block.id,
-              type: block.type as Block['type'],
+              type: block.type as NoteBlock['type'],
               content: block.content,
               metadata: block.data
             }))}
