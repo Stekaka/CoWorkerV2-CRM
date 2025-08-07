@@ -6,22 +6,19 @@ import {
   Plus, 
   GripVertical, 
   Type, 
-  CheckSquare, 
-  Image, 
-  FileText,
-  Hash,
+  CheckSquare,
   List,
-  Link,
+  Quote, 
+  Code, 
+  Hash,
   Bold,
   Italic,
-  Quote,
-  Code,
+  Link,
   Palette,
-  Trash2,
-  MoreHorizontal
+  MoreHorizontal,
+  Trash2
 } from 'lucide-react'
 import { NoteBlock } from '@/lib/supabase'
-import { normalizeBlockContent, createBlock, stringToTodoContent } from '@/utils/blockUtils'
 import TextBlock from '@/components/notes/blocks/TextBlock'
 import TodoBlockComponent from '@/components/notes/blocks/TodoBlock'
 import HeadingBlock from '@/components/notes/blocks/HeadingBlock'
@@ -138,83 +135,40 @@ export default function NoteEditor({
   ]
 
   const renderBlock = (block: NoteBlock) => {
-    // Normalize block to ensure proper content types
-    const normalizedBlock = normalizeBlockContent(block)
-    
-    const blockId = normalizedBlock.id
+    const blockId = block.id
     const isFocused = focusedBlockId === blockId
-    const placeholderText = blocks.length === 1 && normalizedBlock.content === '' ? placeholder : undefined
+    const placeholderText = blocks.length === 1 && block.content === '' ? placeholder : undefined
 
-    switch (normalizedBlock.type) {
+    const commonProps = {
+      key: blockId,
+      block: block as any,
+      isFocused,
+      onFocus: () => setFocusedBlockId(blockId),
+      onUpdate: (updates: Record<string, unknown>) => updateBlock(blockId, updates),
+      onKeyDown: (e: React.KeyboardEvent) => handleKeyDown(blockId, e),
+      placeholder: placeholderText
+    }
+
+    switch (block.type) {
       case 'heading':
-        return <HeadingBlock 
-          key={blockId}
-          ref={(el: HTMLDivElement) => blockRefs.current[blockId] = el}
-          block={{ ...normalizedBlock, content: String(normalizedBlock.content) } as Block}
-          isFocused={isFocused}
-          onFocus={() => setFocusedBlockId(blockId)}
-          onUpdate={(updates: Record<string, unknown>) => updateBlock(blockId, updates)}
-          onKeyDown={(e: React.KeyboardEvent) => handleKeyDown(blockId, e)}
-          placeholder={placeholderText}
-        />
+        return <HeadingBlock {...commonProps} />
       case 'todo':
+        // Ensure todo content is in the right format
+        const todoContent = typeof block.content === 'string' 
+          ? { text: block.content, completed: false }
+          : block.content
         return <TodoBlockComponent 
-          key={blockId}
-          ref={(el: HTMLDivElement) => blockRefs.current[blockId] = el}
-          block={{
-            ...normalizedBlock,
-            content: stringToTodoContent(normalizedBlock.content)
-          }}
-          isFocused={isFocused}
-          onFocus={() => setFocusedBlockId(blockId)}
-          onUpdate={(updates: Record<string, unknown>) => updateBlock(blockId, updates)}
-          onKeyDown={(e: React.KeyboardEvent) => handleKeyDown(blockId, e)}
-          placeholder={placeholderText}
+          {...commonProps} 
+          block={{...block, content: todoContent} as any}
         />
       case 'list':
-        return <ListBlock 
-          key={blockId}
-          ref={(el: HTMLDivElement) => blockRefs.current[blockId] = el}
-          block={{ ...normalizedBlock, content: String(normalizedBlock.content) } as Block}
-          isFocused={isFocused}
-          onFocus={() => setFocusedBlockId(blockId)}
-          onUpdate={(updates: Record<string, unknown>) => updateBlock(blockId, updates)}
-          onKeyDown={(e: React.KeyboardEvent) => handleKeyDown(blockId, e)}
-          placeholder={placeholderText}
-        />
+        return <ListBlock {...commonProps} />
       case 'quote':
-        return <QuoteBlock 
-          key={blockId}
-          ref={(el: HTMLDivElement) => blockRefs.current[blockId] = el}
-          block={{ ...normalizedBlock, content: String(normalizedBlock.content) } as Block}
-          isFocused={isFocused}
-          onFocus={() => setFocusedBlockId(blockId)}
-          onUpdate={(updates: Record<string, unknown>) => updateBlock(blockId, updates)}
-          onKeyDown={(e: React.KeyboardEvent) => handleKeyDown(blockId, e)}
-          placeholder={placeholderText}
-        />
+        return <QuoteBlock {...commonProps} />
       case 'code':
-        return <CodeBlock 
-          key={blockId}
-          ref={(el: HTMLDivElement) => blockRefs.current[blockId] = el}
-          block={{ ...normalizedBlock, content: String(normalizedBlock.content) } as Block}
-          isFocused={isFocused}
-          onFocus={() => setFocusedBlockId(blockId)}
-          onUpdate={(updates: Record<string, unknown>) => updateBlock(blockId, updates)}
-          onKeyDown={(e: React.KeyboardEvent) => handleKeyDown(blockId, e)}
-          placeholder={placeholderText}
-        />
+        return <CodeBlock {...commonProps} />
       default:
-        return <TextBlock 
-          key={blockId}
-          ref={(el: HTMLDivElement) => blockRefs.current[blockId] = el}
-          block={{ ...normalizedBlock, content: String(normalizedBlock.content) } as Block}
-          isFocused={isFocused}
-          onFocus={() => setFocusedBlockId(blockId)}
-          onUpdate={(updates: Record<string, unknown>) => updateBlock(blockId, updates)}
-          onKeyDown={(e: React.KeyboardEvent) => handleKeyDown(blockId, e)}
-          placeholder={placeholderText}
-        />
+        return <TextBlock {...commonProps} />
     }
   }
 
