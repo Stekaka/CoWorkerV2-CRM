@@ -149,7 +149,7 @@ export default function ModalSystem({ activeModal, onClose }: ModalSystemProps) 
     }
   }
 
-  const config = getModalConfig(activeModal)
+  const config = activeModal ? getModalConfig(activeModal) : null
   if (!config) return null
 
   // Nu använder vi emoji-strängar istället av lucide-react ikoner
