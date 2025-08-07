@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Save, Share, MoreVertical, Star, Archive, Trash } from 'lucide-react'
-import NoteEditor from '@/components/notes/NoteEditor'
+import NoteEditor, { Block } from '@/components/notes/NoteEditor'
 
 interface Note {
   id: string
@@ -28,6 +28,27 @@ interface Note {
   createdAt: string
   updatedAt: string
 }
+
+// Typ-säker konvertering från rå data till Block[]
+const convertToBlocks = (rawBlocks: Array<{ id: string; type: string; content: string; metadata?: any }>): Block[] => {
+  const validTypes: Block['type'][] = ['text', 'heading', 'todo', 'list', 'quote', 'code', 'image', 'divider'];
+  
+  return rawBlocks
+    .map(block => {
+      // Kontrollera om typen är giltig, annars använd 'text' som fallback
+      const type = validTypes.includes(block.type as Block['type']) 
+        ? (block.type as Block['type']) 
+        : 'text';
+      
+      return {
+        id: block.id,
+        type,
+        content: block.content,
+        metadata: block.metadata
+      } as Block;
+    })
+    .filter(Boolean); // Ta bort eventuella null/undefined värden
+};
 
 export default function EditNotePage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -337,7 +358,7 @@ export default function EditNotePage({ params }: { params: { id: string } }) {
           {/* Note Editor */}
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
             <NoteEditor
-              initialBlocks={note.blocks}
+              initialBlocks={convertToBlocks(note.blocks)}
               onChange={handleBlocksUpdate}
             />
           </div>
