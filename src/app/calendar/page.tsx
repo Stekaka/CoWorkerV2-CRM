@@ -100,7 +100,7 @@ const formatDate = (dateString: string) => {
 }
 
 export default function CalendarPage() {
-  const [currentDate, setCurrentDate] = useState(new Date())
+  const [currentDate] = useState(new Date())
   const [view, setView] = useState<'day' | 'week' | 'month'>('week')
   const [events] = useState<Event[]>(mockEvents)
 

@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FileText, Clock, CheckCircle, XCircle, AlertCircle, Plus, Search, 
-  Eye, Edit, Send, Download, Trash2, Save, X, Calendar, Building, 
-  User, DollarSign, Package, Calculator, Copy, FileDown
+  Eye, Edit, Send, Download, Trash2, Save, X, Building, 
+  Package, Calculator, Copy
 } from 'lucide-react'
 
 interface Quote {
@@ -333,7 +333,7 @@ ${quote.notes ? `\nAnteckningar:\n${quote.notes}` : ''}
     setItems([...items, newItem])
   }
 
-  const updateItem = (items: QuoteItem[], itemId: string, field: keyof QuoteItem, value: any, setItems: (items: QuoteItem[]) => void) => {
+  const updateItem = (items: QuoteItem[], itemId: string, field: keyof QuoteItem, value: string | number, setItems: (items: QuoteItem[]) => void) => {
     const updatedItems = items.map(item => {
       if (item.id === itemId) {
         const updated = { ...item, [field]: value }
@@ -679,7 +679,7 @@ ${quote.notes ? `\nAnteckningar:\n${quote.notes}` : ''}
                       Artiklar
                     </h3>
                     <div className="space-y-3">
-                      {(isCreating ? newQuote.items || [] : editingQuote?.items || []).map((item, index) => (
+                      {(isCreating ? newQuote.items || [] : editingQuote?.items || []).map((item) => (
                         <div key={item.id} className="bg-slate-800/30 rounded-lg p-4">
                           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                             <div className="md:col-span-2">

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Settings, Zap, Bell, Shield, Workflow } from 'lucide-react'
+import { Zap, Bell, Shield, Workflow } from 'lucide-react'
 
 export default function AutomationPage() {
   const [automations, setAutomations] = useState([

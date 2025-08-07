@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, Clock, Users, MapPin } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 
 export default function NewMeetingPage() {
   const [formData, setFormData] = useState({

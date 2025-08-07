@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Phone, Clock, User } from 'lucide-react'
+import { Phone } from 'lucide-react'
 
 export default function NewCallPage() {
   const [formData, setFormData] = useState({
