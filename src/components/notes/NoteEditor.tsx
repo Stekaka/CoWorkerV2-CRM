@@ -39,12 +39,12 @@ export default function NoteEditor({
   onChange,
   placeholder = "Börja skriva eller tryck '/' för kommandon..."
 }: NoteEditorProps) {
-  const [blocks, setBlocks] = useState<Block[]>(initialBlocks.length > 0 ? initialBlocks : [
+  const [blocks, setBlocks] = useState<NoteBlock[]>(initialBlocks.length > 0 ? initialBlocks : [
     {
       id: 'initial',
       type: 'text',
       content: '',
-      metadata: {}
+      data: {}
     }
   ])
   const [focusedBlockId, setFocusedBlockId] = useState<string | null>('initial')
