@@ -571,18 +571,18 @@ export default function CompanySettings() {
                           >
                             {companyUser.role === 'admin' ? 'Admin' : 'Användare'}
                           </Badge>
-                          {companyUser.user_id === user?.id && (
+                          {companyUser.id === user?.id && (
                             <Badge variant="outline">Du</Badge>
                           )}
                         </div>
                         <p className="text-sm text-gray-600">{companyUser.email}</p>
                       </div>
                       
-                      {isAdmin && companyUser.user_id !== user?.id && (
+                      {isAdmin && companyUser.id !== user?.id && (
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => handleRemoveUser(companyUser.user_id)}
+                          onClick={() => handleRemoveUser(companyUser.id)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
