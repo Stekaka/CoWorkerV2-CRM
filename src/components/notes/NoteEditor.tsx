@@ -62,8 +62,8 @@ export default function NoteEditor({
     const newBlock: NoteBlock = {
       id: `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       type,
-      content: type === 'todo' ? { text: '', checked: false } : '',
-      metadata: type === 'heading' ? { level: 2 } : {}
+      content: type === 'todo' ? '' : '',
+      data: type === 'todo' ? { text: '', checked: false } : type === 'heading' ? { level: 2 } : {}
     }
 
     const currentIndex = blocks.findIndex(block => block.id === afterId)
