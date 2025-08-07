@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FileText, Clock, CheckCircle, XCircle, AlertCircle, Plus, Search, 
   Eye, Edit, Send, Download, Trash2, Save, X, Building, 
-  Package, Calculator, Copy
+  Package, Calculator, Copy, Loader2
 } from 'lucide-react'
+import { useQuotes } from '@/hooks/useQuotes'
 
 interface Quote {
   id: string
@@ -34,7 +35,7 @@ interface QuoteItem {
   total: number
 }
 
-const initialQuotes: Quote[] = []
+
 
 const getStatusColor = (status: Quote['status']) => {
   switch (status) {
@@ -67,13 +68,14 @@ const getStatusIcon = (status: Quote['status']) => {
 }
 
 export default function QuotesPage() {
-  const [quotes, setQuotes] = useState<Quote[]>(initialQuotes)
+  const { quotes, loading, error, createQuote, updateQuote } = useQuotes()
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null)
   const [isCreating, setIsCreating] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editingQuote, setEditingQuote] = useState<Quote | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
 
   // New quote form state
   const [newQuote, setNewQuote] = useState<Partial<Quote>>({
@@ -122,11 +124,7 @@ export default function QuotesPage() {
     return daysUntilExpiry <= 7 && daysUntilExpiry >= 0
   }
 
-  const generateQuoteNumber = () => {
-    const year = new Date().getFullYear()
-    const nextNumber = quotes.length + 1
-    return `OFF-${year}-${nextNumber.toString().padStart(3, '0')}`
-  }
+
 
   const calculateItemTotal = (quantity: number, unitPrice: number) => {
     return quantity * unitPrice
@@ -159,36 +157,30 @@ export default function QuotesPage() {
     setIsCreating(true)
   }
 
-  const handleSaveQuote = () => {
+  const handleSaveQuote = async () => {
     if (!newQuote.client || !newQuote.title || !newQuote.items?.length) return
 
-    const items = newQuote.items.map(item => ({
-      ...item,
-      total: calculateItemTotal(item.quantity, item.unitPrice)
-    }))
-
-    const amount = calculateTotal(items, newQuote.discount, newQuote.taxRate)
-    
-    const quote: Quote = {
-      id: Date.now().toString(),
-      number: generateQuoteNumber(),
-      client: newQuote.client,
-      title: newQuote.title,
-      amount,
-      status: 'draft',
-      createdDate: new Date().toISOString().split('T')[0],
-      expiryDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 14 days from now
-      items,
-      notes: newQuote.notes,
-      clientEmail: newQuote.clientEmail,
-      clientPhone: newQuote.clientPhone,
-      clientAddress: newQuote.clientAddress,
-      taxRate: newQuote.taxRate || 25,
-      discount: newQuote.discount || 0
+    try {
+      setIsSaving(true)
+      await createQuote(newQuote)
+      setIsCreating(false)
+      setNewQuote({
+        client: '',
+        title: '',
+        clientEmail: '',
+        clientPhone: '',
+        clientAddress: '',
+        notes: '',
+        taxRate: 25,
+        discount: 0,
+        items: [{ id: '1', description: '', quantity: 1, unitPrice: 0, total: 0 }]
+      })
+    } catch (error) {
+      console.error('Failed to save quote:', error)
+      // Du kan lägga till en toast notification här
+    } finally {
+      setIsSaving(false)
     }
-
-    setQuotes([quote, ...quotes])
-    setIsCreating(false)
   }
 
   const handleEditQuote = (quote: Quote) => {
@@ -196,31 +188,28 @@ export default function QuotesPage() {
     setIsEditing(true)
   }
 
-  const handleUpdateQuote = () => {
+  const handleUpdateQuote = async () => {
     if (!editingQuote) return
 
-    const items = editingQuote.items.map(item => ({
-      ...item,
-      total: calculateItemTotal(item.quantity, item.unitPrice)
-    }))
-
-    const amount = calculateTotal(items, editingQuote.discount, editingQuote.taxRate)
-
-    const updatedQuote = {
-      ...editingQuote,
-      items,
-      amount
+    try {
+      setIsSaving(true)
+      await updateQuote(editingQuote.id, editingQuote)
+      setIsEditing(false)
+      setEditingQuote(null)
+    } catch (error) {
+      console.error('Failed to update quote:', error)
+      // Du kan lägga till en toast notification här
+    } finally {
+      setIsSaving(false)
     }
-
-    setQuotes(quotes.map(q => q.id === editingQuote.id ? updatedQuote : q))
-    setIsEditing(false)
-    setEditingQuote(null)
   }
 
-  const handleSendQuote = (quoteId: string) => {
-    setQuotes(quotes.map(q => 
-      q.id === quoteId ? { ...q, status: 'sent' as const } : q
-    ))
+  const handleSendQuote = async (quoteId: string) => {
+    try {
+      await updateQuote(quoteId, { status: 'sent' })
+    } catch (error) {
+      console.error('Failed to send quote:', error)
+    }
   }
 
   const handleDownloadPDF = (quote: Quote) => {
@@ -254,16 +243,23 @@ ${quote.notes ? `\nAnteckningar:\n${quote.notes}` : ''}
     URL.revokeObjectURL(url)
   }
 
-  const handleDuplicateQuote = (quote: Quote) => {
-    const duplicatedQuote: Quote = {
-      ...quote,
-      id: Date.now().toString(),
-      number: generateQuoteNumber(),
-      status: 'draft',
-      createdDate: new Date().toISOString().split('T')[0],
-      expiryDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const handleDuplicateQuote = async (quote: Quote) => {
+    try {
+      const duplicatedQuoteData = {
+        client: quote.client,
+        title: `${quote.title} (Kopia)`,
+        items: quote.items,
+        notes: quote.notes,
+        clientEmail: quote.clientEmail,
+        clientPhone: quote.clientPhone,
+        clientAddress: quote.clientAddress,
+        taxRate: quote.taxRate,
+        discount: quote.discount
+      }
+      await createQuote(duplicatedQuoteData)
+    } catch (error) {
+      console.error('Failed to duplicate quote:', error)
     }
-    setQuotes([duplicatedQuote, ...quotes])
   }
 
   const addNewItem = (items: QuoteItem[], setItems: (items: QuoteItem[]) => void) => {
@@ -300,8 +296,27 @@ ${quote.notes ? `\nAnteckningar:\n${quote.notes}` : ''}
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 mobile-padding ios-height-fix">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 safe-area-top">
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center min-h-[50vh]">
+            <div className="text-center">
+              <Loader2 className="w-8 h-8 text-cyan-500 animate-spin mx-auto mb-4" />
+              <p className="text-slate-300">Laddar offerter...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
+            <p className="text-red-400">Fel: {error}</p>
+          </div>
+        )}
+
+        {!loading && (
+          <>
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 safe-area-top">
           <div className="mb-4 md:mb-0">
             <h1 className="text-2xl md:text-3xl font-light text-white mb-2">Offerter & Prisförslag</h1>
             <p className="text-sm md:text-base text-slate-400">Hantera dina offerter och spåra försäljningspipeline</p>
@@ -776,10 +791,15 @@ ${quote.notes ? `\nAnteckningar:\n${quote.notes}` : ''}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={isCreating ? handleSaveQuote : handleUpdateQuote}
-                    className="px-6 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-cyan-600/25 transition-all duration-300 flex items-center"
+                    disabled={isSaving}
+                    className="px-6 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-cyan-600/25 transition-all duration-300 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Save className="w-4 h-4 mr-2" />
-                    {isCreating ? 'Skapa Offert' : 'Spara Ändringar'}
+                    {isSaving ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4 mr-2" />
+                    )}
+                    {isSaving ? 'Sparar...' : (isCreating ? 'Skapa Offert' : 'Spara Ändringar')}
                   </motion.button>
                 </div>
               </motion.div>
@@ -896,6 +916,8 @@ ${quote.notes ? `\nAnteckningar:\n${quote.notes}` : ''}
             </motion.div>
           )}
         </AnimatePresence>
+          </>
+        )}
       </div>
     </div>
   )
