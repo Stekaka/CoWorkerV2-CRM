@@ -27,6 +27,8 @@ interface Note {
   }>
   createdAt: string
   updatedAt: string
+  hasUrgentTodos?: boolean
+  blocksCount?: number
 }
 
 // Typ-säker konvertering från rå data till Block[]
@@ -48,6 +50,39 @@ const convertToBlocks = (rawBlocks: Array<{ id: string; type: string; content: s
       } as Block;
     })
     .filter(Boolean); // Ta bort eventuella null/undefined värden
+};
+
+// Typ för partiella Note-objekt från backend
+type PartialNote = Omit<Note, 'hasUrgentTodos' | 'blocksCount'> & {
+  hasUrgentTodos?: boolean;
+  blocksCount?: number;
+};
+
+// Normalisera notes från backend och sätt default-värden för saknade fält
+const normalizeNotes = (notes: PartialNote[]): Note[] => {
+  return notes.map(note => ({
+    ...note,
+    hasUrgentTodos: note.hasUrgentTodos ?? checkHasUrgentTodos(note.blocks),
+    blocksCount: note.blocksCount ?? note.blocks.length
+  }));
+};
+
+// Normalisera en enskild note
+const normalizeNote = (note: PartialNote): Note => {
+  return {
+    ...note,
+    hasUrgentTodos: note.hasUrgentTodos ?? checkHasUrgentTodos(note.blocks),
+    blocksCount: note.blocksCount ?? note.blocks.length
+  };
+};
+
+// Hjälpfunktion för att kontrollera om note har urgenta todos
+const checkHasUrgentTodos = (blocks: Note['blocks']): boolean => {
+  return blocks.some(block => 
+    block.type === 'todo' && 
+    !block.metadata?.checked && 
+    (block.metadata?.urgent === true || block.content.includes('!'))
+  );
 };
 
 export default function EditNotePage({ params }: { params: { id: string } }) {
