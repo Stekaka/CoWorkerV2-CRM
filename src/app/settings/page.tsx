@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import CompanySettings from '@/components/settings/CompanySettings';
+import CompanySettingsSimple from '@/components/settings/CompanySettingsSimple';
 
 export default function SettingsPage() {
   return (
     <div className="container mx-auto py-6 px-4">
-      <CompanySettings />
+      <CompanySettingsSimple />
     </div>
   );
 }
