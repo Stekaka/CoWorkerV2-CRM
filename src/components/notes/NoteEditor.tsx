@@ -143,7 +143,7 @@ export default function NoteEditor({
       block,
       isFocused: focusedBlockId === block.id,
       onFocus: () => setFocusedBlockId(block.id),
-      onUpdate: (updates: Partial<Block>) => updateBlock(block.id, updates),
+      onUpdate: (updates: any) => updateBlock(block.id, updates),
       onKeyDown: (e: React.KeyboardEvent) => handleKeyDown(block.id, e),
       placeholder: blocks.length === 1 && block.content === '' ? placeholder : undefined
     }
