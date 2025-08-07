@@ -17,19 +17,21 @@ import {
 import { formatDistanceToNow } from 'date-fns'
 import { sv } from 'date-fns/locale'
 
-import { NoteBlock } from '@/lib/supabase'
-
 interface Note {
   id: string
   title: string
-  content: NoteBlock[]
+  content: string
   tags: string[]
-  is_pinned: boolean
-  lead_id: string | null
-  company_id: string
-  created_by: string
-  created_at: string
-  updated_at: string
+  linkedTo?: {
+    type: 'lead' | 'customer' | 'order' | 'case'
+    id: string
+    name: string
+  }
+  createdAt: Date
+  updatedAt: Date
+  isPinned: boolean
+  hasUrgentTodos: boolean
+  blocksCount: number
 }
 
 interface NoteCardProps {
@@ -38,18 +40,28 @@ interface NoteCardProps {
 }
 
 export default function NoteCard({ note, view }: NoteCardProps) {
-  // Extract preview text from content blocks
-  const previewText = note.content
-    .map(block => block.content)
-    .join(' ')
-    .substring(0, 150)
+  const getLinkedIcon = (type: string) => {
+    switch (type) {
+      case 'lead': return <User className="w-4 h-4" />
+      case 'customer': return <Building className="w-4 h-4" />
+      case 'order': return <ShoppingCart className="w-4 h-4" />
+      case 'case': return <Briefcase className="w-4 h-4" />
+      default: return <FileText className="w-4 h-4" />
+    }
+  }
 
-  // Check for urgent todos
-  const hasUrgentTodos = note.content.some(block => 
-    block.type === 'todo' && 
-    block.data?.priority === 'high' && 
-    !block.data?.completed
-  )
+  const getLinkedColor = (type: string) => {
+    switch (type) {
+      case 'lead': return 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/30'
+      case 'customer': return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/30'
+      case 'order': return 'text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-900/30'
+      case 'case': return 'text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/30'
+      default: return 'text-slate-600 bg-slate-100 dark:text-slate-400 dark:bg-slate-900/30'
+    }
+  }
+
+  // Extract preview text (first 150 chars without formatting)
+  const previewText = note.content.replace(/[#*_`]/g, '').substring(0, 150)
 
   if (view === 'list') {
     return (
@@ -66,10 +78,10 @@ export default function NoteCard({ note, view }: NoteCardProps) {
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white truncate">
                   {note.title || 'Untitled'}
                 </h3>
-                {note.is_pinned && (
+                {note.isPinned && (
                   <Star className="w-4 h-4 text-amber-500 fill-amber-500 flex-shrink-0" />
                 )}
-                {hasUrgentTodos && (
+                {note.hasUrgentTodos && (
                   <div className="flex items-center gap-1 text-red-500 flex-shrink-0">
                     <AlertCircle className="w-4 h-4" />
                     <span className="text-xs font-medium">Brådskande</span>
@@ -111,22 +123,22 @@ export default function NoteCard({ note, view }: NoteCardProps) {
                 )}
 
                 {/* Linked To */}
-                {/* {note.linkedTo && (
+                {note.linkedTo && (
                   <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-medium ${getLinkedColor(note.linkedTo.type)}`}>
                     {getLinkedIcon(note.linkedTo.type)}
                     {note.linkedTo.name}
                   </div>
-                )} */}
+                )}
               </div>
 
               <div className="flex items-center gap-4 text-xs text-slate-500">
                 <div className="flex items-center gap-1">
                   <FileText className="w-3 h-3" />
-                  {note.content?.length || 0} block{(note.content?.length || 0) !== 1 ? 's' : ''}
+                  {note.blocksCount} block{note.blocksCount !== 1 ? '' : ''}
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
-                  {formatDistanceToNow(new Date(note.updated_at), { addSuffix: true, locale: sv })}
+                  {formatDistanceToNow(note.updatedAt, { addSuffix: true, locale: sv })}
                 </div>
               </div>
             </div>
@@ -149,7 +161,7 @@ export default function NoteCard({ note, view }: NoteCardProps) {
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white truncate">
             {note.title || 'Untitled'}
           </h3>
-          {note.is_pinned && (
+          {note.isPinned && (
             <Star className="w-4 h-4 text-amber-500 fill-amber-500 flex-shrink-0" />
           )}
         </div>
@@ -159,14 +171,14 @@ export default function NoteCard({ note, view }: NoteCardProps) {
       </div>
 
       {/* Urgent Badge */}
-      {/* {note.hasUrgentTodos && (
+      {note.hasUrgentTodos && (
         <div className="flex items-center gap-2 mb-4">
           <div className="flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-xs font-medium">
             <AlertCircle className="w-3 h-3" />
             Innehåller brådskande uppgifter
           </div>
         </div>
-      )} */}
+      )}
 
       {/* Preview */}
       {previewText && (
@@ -200,24 +212,24 @@ export default function NoteCard({ note, view }: NoteCardProps) {
       )}
 
       {/* Linked To */}
-      {/* {note.linkedTo && (
+      {note.linkedTo && (
         <div className="mb-4">
           <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium ${getLinkedColor(note.linkedTo.type)}`}>
             {getLinkedIcon(note.linkedTo.type)}
             <span>Kopplad till {note.linkedTo.name}</span>
           </div>
         </div>
-      )} */}
+      )}
 
       {/* Footer */}
       <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-700">
         <div className="flex items-center gap-1 text-xs text-slate-500">
           <FileText className="w-3 h-3" />
-          <span>{note.content.length} block{note.content.length !== 1 ? 's' : ''}</span>
+          <span>{note.blocksCount} block{note.blocksCount !== 1 ? '' : ''}</span>
         </div>
         <div className="flex items-center gap-1 text-xs text-slate-500">
           <Clock className="w-3 h-3" />
-          <span>{formatDistanceToNow(note.updated_at, { addSuffix: true, locale: sv })}</span>
+          <span>{formatDistanceToNow(note.updatedAt, { addSuffix: true, locale: sv })}</span>
         </div>
       </div>
     </motion.div>

@@ -6,29 +6,42 @@ import {
   Plus, 
   GripVertical, 
   Type, 
-  CheckSquare,
-  List,
-  Quote, 
-  Code, 
+  CheckSquare, 
+  Image, 
+  FileText,
   Hash,
+  List,
+  Link,
   Bold,
   Italic,
-  Link,
+  Quote,
+  Code,
   Palette,
-  MoreHorizontal,
-  Trash2
+  Trash2,
+  MoreHorizontal
 } from 'lucide-react'
-import { NoteBlock } from '@/lib/supabase'
 import TextBlock from '@/components/notes/blocks/TextBlock'
-import TodoBlockComponent from '@/components/notes/blocks/TodoBlock'
+import TodoBlock from '@/components/notes/blocks/TodoBlock'
 import HeadingBlock from '@/components/notes/blocks/HeadingBlock'
 import ListBlock from '@/components/notes/blocks/ListBlock'
 import QuoteBlock from '@/components/notes/blocks/QuoteBlock'
 import CodeBlock from '@/components/notes/blocks/CodeBlock'
 
+export interface Block {
+  id: string
+  type: 'text' | 'heading' | 'todo' | 'list' | 'quote' | 'code' | 'image' | 'divider'
+  content: any
+  metadata?: {
+    level?: number // For headings (1-6)
+    checked?: boolean // For todos
+    language?: string // For code blocks
+    style?: string // For custom styling
+  }
+}
+
 interface NoteEditorProps {
-  initialBlocks?: NoteBlock[]
-  onChange?: (blocks: NoteBlock[]) => void
+  initialBlocks?: Block[]
+  onChange?: (blocks: Block[]) => void
   placeholder?: string
 }
 
@@ -37,29 +50,12 @@ export default function NoteEditor({
   onChange,
   placeholder = "Börja skriva eller tryck '/' för kommandon..."
 }: NoteEditorProps) {
-  // Helper function to convert content to TodoContent format
-  const toTodoContent = (content: unknown) => {
-    if (typeof content === 'string') {
-      return { text: content, checked: false }
-    }
-    if (typeof content === 'object' && content !== null) {
-      const obj = content as Record<string, unknown>
-      return {
-        text: String(obj.text || ''),
-        checked: Boolean(obj.checked || obj.completed || false),
-        priority: obj.priority as 'low' | 'medium' | 'high' | undefined,
-        dueDate: obj.dueDate as Date | undefined,
-        assignedTo: obj.assignedTo as string | undefined
-      }
-    }
-    return { text: '', checked: false }
-  }
-  const [blocks, setBlocks] = useState<NoteBlock[]>(initialBlocks.length > 0 ? initialBlocks : [
+  const [blocks, setBlocks] = useState<Block[]>(initialBlocks.length > 0 ? initialBlocks : [
     {
       id: 'initial',
       type: 'text',
       content: '',
-      data: {}
+      metadata: {}
     }
   ])
   const [focusedBlockId, setFocusedBlockId] = useState<string | null>('initial')
@@ -68,37 +64,17 @@ export default function NoteEditor({
   
   const blockRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
 
-  const updateBlocks = useCallback((newBlocks: NoteBlock[]) => {
-    // Convert TodoContent objects back to strings for database storage
-    const normalizedBlocks = newBlocks.map(block => {
-      if (block.type === 'todo' && typeof block.content === 'object' && block.content !== null) {
-        // Convert TodoContent object back to string for storage
-        const todoContent = block.content as any
-        return {
-          ...block,
-          content: todoContent.text || '',
-          data: {
-            ...block.data,
-            checked: todoContent.checked || false,
-            priority: todoContent.priority,
-            dueDate: todoContent.dueDate,
-            assignedTo: todoContent.assignedTo
-          }
-        }
-      }
-      return block
-    })
-    
-    setBlocks(normalizedBlocks)
-    onChange?.(normalizedBlocks)
+  const updateBlocks = useCallback((newBlocks: Block[]) => {
+    setBlocks(newBlocks)
+    onChange?.(newBlocks)
   }, [onChange])
 
-  const addBlock = (afterId: string, type: NoteBlock['type'] = 'text') => {
-    const newBlock: NoteBlock = {
+  const addBlock = (afterId: string, type: Block['type'] = 'text') => {
+    const newBlock: Block = {
       id: `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       type,
-      content: '',
-      data: type === 'heading' ? { level: 2 } : {}
+      content: type === 'todo' ? { text: '', checked: false } : '',
+      metadata: type === 'heading' ? { level: 2 } : {}
     }
 
     const currentIndex = blocks.findIndex(block => block.id === afterId)
@@ -129,7 +105,7 @@ export default function NoteEditor({
     }
   }
 
-  const updateBlock = (blockId: string, updates: Partial<NoteBlock>) => {
+  const updateBlock = (blockId: string, updates: Partial<Block>) => {
     const newBlocks = blocks.map(block => 
       block.id === blockId ? { ...block, ...updates } : block
     )
@@ -147,20 +123,7 @@ export default function NoteEditor({
       addBlock(blockId, 'text')
     } else if (e.key === 'Backspace') {
       const block = blocks.find(b => b.id === blockId)
-      // Check if block is empty based on type
-      let isEmpty = false
-      if (block?.type === 'todo') {
-        // For todo blocks, check if stored as string or TodoContent
-        if (typeof block.content === 'string') {
-          isEmpty = !block.content.trim()
-        } else if (typeof block.content === 'object' && block.content) {
-          isEmpty = !(block.content as any).text?.trim()
-        }
-      } else {
-        isEmpty = !block?.content
-      }
-      
-      if (isEmpty) {
+      if (block?.content === '' || (typeof block?.content === 'object' && block.content.text === '')) {
         e.preventDefault()
         deleteBlock(blockId)
       }
@@ -184,31 +147,23 @@ export default function NoteEditor({
     { type: 'code', icon: Code, label: 'Kod', description: 'Kodblock med syntax highlighting' },
   ]
 
-  const renderBlock = (block: NoteBlock) => {
-    const blockId = block.id
-    const isFocused = focusedBlockId === blockId
-    const placeholderText = blocks.length === 1 && block.content === '' ? placeholder : undefined
-
+  const renderBlock = (block: Block) => {
     const commonProps = {
-      key: blockId,
-      block: block as any,
-      isFocused,
-      onFocus: () => setFocusedBlockId(blockId),
-      onUpdate: (updates: Record<string, unknown>) => updateBlock(blockId, updates),
-      onKeyDown: (e: React.KeyboardEvent) => handleKeyDown(blockId, e),
-      placeholder: placeholderText
+      key: block.id,
+      ref: (el: HTMLDivElement) => blockRefs.current[block.id] = el,
+      block,
+      isFocused: focusedBlockId === block.id,
+      onFocus: () => setFocusedBlockId(block.id),
+      onUpdate: (updates: Partial<Block>) => updateBlock(block.id, updates),
+      onKeyDown: (e: React.KeyboardEvent) => handleKeyDown(block.id, e),
+      placeholder: blocks.length === 1 && block.content === '' ? placeholder : undefined
     }
 
     switch (block.type) {
       case 'heading':
         return <HeadingBlock {...commonProps} />
       case 'todo':
-        // Convert content to TodoContent format using helper
-        const todoContent = toTodoContent(block.content)
-        return <TodoBlockComponent 
-          {...commonProps} 
-          block={{...block, content: todoContent} as any}
-        />
+        return <TodoBlock {...commonProps} />
       case 'list':
         return <ListBlock {...commonProps} />
       case 'quote':
@@ -327,7 +282,7 @@ export default function NoteEditor({
                         <button
                           key={blockType.type}
                           onClick={() => {
-                            updateBlock(block.id, { type: blockType.type as NoteBlock['type'] })
+                            updateBlock(block.id, { type: blockType.type as Block['type'] })
                             setShowBlockMenu(null)
                           }}
                           className="w-full flex items-center gap-3 p-3 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-left"
@@ -383,7 +338,7 @@ export default function NoteEditor({
                 key={blockType.type}
                 onClick={() => {
                   if (showBlockMenu) {
-                    updateBlock(showBlockMenu, { type: blockType.type as NoteBlock['type'] })
+                    updateBlock(showBlockMenu, { type: blockType.type as Block['type'] })
                   }
                   setCommandMenuPosition(null)
                   setShowBlockMenu(null)

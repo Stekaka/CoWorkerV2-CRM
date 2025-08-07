@@ -15,12 +15,13 @@ import {
   List,
   ChevronDown
 } from 'lucide-react'
-import NoteCard from '@/components/notes/NoteCard-new'
+import NoteCard from '@/components/notes/NoteCard'
 import NoteFilters from '@/components/notes/NoteFilters'
-import { useNotes } from '@/hooks/useAPI'
+import { NotesStorage, type Note } from '@/lib/notes-storage'
 import { useRouter } from 'next/navigation'
 
 export default function NotesPage() {
+  const [notes, setNotes] = useState<Note[]>([])
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
@@ -28,14 +29,14 @@ export default function NotesPage() {
   const [showFilters, setShowFilters] = useState(false)
   const [showQuickCreate, setShowQuickCreate] = useState(false)
   const [quickTitle, setQuickTitle] = useState('')
-  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
   const quickCreateRef = useRef<HTMLDivElement>(null)
 
-  // Use the new API hook
-  const { notes, loading, createNote, refetch } = useNotes({
-    search: searchQuery,
-    tags: selectedTags.length > 0 ? selectedTags : undefined
-  })
+  // Load notes from localStorage on mount
+  useEffect(() => {
+    setNotes(NotesStorage.getAllNotes())
+    setIsLoading(false)
+  }, [])
 
   const quickSuggestions = [
     '💼 Mötesanteckningar',
@@ -61,21 +62,22 @@ export default function NotesPage() {
     }
   }, [showQuickCreate])
 
-  const createQuickNote = async () => {
+  const createQuickNote = () => {
     if (!quickTitle.trim()) return
     
     try {
-      const newNote = await createNote({
-        title: quickTitle.trim(),
-        content: [],
-        tags: []
-      })
+      const newNote = NotesStorage.createNote(quickTitle.trim())
+      NotesStorage.saveNote(newNote)
       
+      // Update local state
+      setNotes([newNote, ...notes])
       setQuickTitle('')
       setShowQuickCreate(false)
       
       // Navigate to the new note for editing
-      router.push(`/notes/${newNote.id}`)
+      setTimeout(() => {
+        window.location.href = `/notes/${newNote.id}`
+      }, 200)
     } catch (error) {
       console.error('Error creating note:', error)
       alert('Kunde inte skapa anteckningen. Försök igen.')
@@ -83,10 +85,11 @@ export default function NotesPage() {
   }
 
   const filteredNotes = notes.filter(note => {
-    // Search functionality is handled by the API hook
+    const matchesSearch = note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         note.content.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesTags = selectedTags.length === 0 || 
                        selectedTags.some(tag => note.tags.includes(tag))
-    return matchesTags
+    return matchesSearch && matchesTags
   })
 
   const sortedNotes = [...filteredNotes].sort((a, b) => {
@@ -94,15 +97,15 @@ export default function NotesPage() {
       case 'title':
         return a.title.localeCompare(b.title)
       case 'created':
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       default:
-        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     }
   })
 
   // Separate pinned notes
-  const pinnedNotes = sortedNotes.filter(note => note.is_pinned)
-  const regularNotes = sortedNotes.filter(note => !note.is_pinned)
+  const pinnedNotes = sortedNotes.filter(note => note.isPinned)
+  const regularNotes = sortedNotes.filter(note => !note.isPinned)
 
   return (
         <div className="min-h-screen bg-slate-900">

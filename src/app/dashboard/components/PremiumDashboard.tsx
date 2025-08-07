@@ -2,229 +2,37 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Resizable } from 'react-resizable'
-import ModalSystem from './ModalSystem'
-import DashboardStats from './dashboard-components/DashboardStats'
-import LeadsOverviewCard from './dashboard-components/LeadsOverviewCard'
-// import CalendarTodoCard from './dashboard-components/CalendarTodoCard'
-import EconomyOverviewCard from './dashboard-components/EconomyOverviewCard'
-import MailCampaignsCard from './dashboard-components/MailCampaignsCard'
-import RecentActivitiesCard from './dashboard-components/RecentActivitiesCard'
+// import { Bell, Settings, Search, Filter } from 'lucide-react'
+// import NavigationSidebar from './NavigationSidebar'
+// import ModalSystem from './ModalSystem'
+// import QuickActionsBar from './dashboard-components/QuickActionsBar'
 
-// Simple snap system with predefined sizes
-const GRID_SIZE = 20
+// Simple placeholder components to identify the problematic import
+const DashboardStats = ({ stats }: any) => (
+  <div className="text-white p-4 bg-slate-800 rounded-lg">Dashboard Stats Placeholder</div>
+)
 
-// Predefined size presets - Small, Medium, Large
-const SIZE_PRESETS = {
-  SMALL: { width: 320, height: 240 },
-  MEDIUM: { width: 480, height: 360 },
-  LARGE: { width: 640, height: 480 }
-} as const
+const LeadsOverviewCard = () => (
+  <div className="text-white p-4 bg-slate-800 rounded-lg">Leads Overview Placeholder</div>
+)
 
-const snapToGrid = (value: number): number => {
-  return Math.round(value / GRID_SIZE) * GRID_SIZE
-}
+const CalendarTodoCard = () => (
+  <div className="text-white p-4 bg-slate-800 rounded-lg">Calendar Todo Placeholder</div>
+)
 
-const snapToSizePreset = (width: number, height: number): { width: number; height: number } => {
-  const area = width * height
-  const smallArea = SIZE_PRESETS.SMALL.width * SIZE_PRESETS.SMALL.height
-  const mediumArea = SIZE_PRESETS.MEDIUM.width * SIZE_PRESETS.MEDIUM.height
-  
-  if (area <= (smallArea + mediumArea) / 2) {
-    return SIZE_PRESETS.SMALL
-  } else if (area <= (mediumArea + SIZE_PRESETS.LARGE.width * SIZE_PRESETS.LARGE.height) / 2) {
-    return SIZE_PRESETS.MEDIUM
-  } else {
-    return SIZE_PRESETS.LARGE
-  }
-}
+const EconomyOverviewCard = () => (
+  <div className="text-white p-4 bg-slate-800 rounded-lg">Economy Overview Placeholder</div>
+)
 
-interface DashboardCardConfig {
-  id: string
-  component: React.ComponentType<{ width?: number; height?: number }>
-  title: string
-  defaultSize: keyof typeof SIZE_PRESETS
-}
+const MailCampaignsCard = () => (
+  <div className="text-white p-4 bg-slate-800 rounded-lg">Mail Campaigns Placeholder</div>
+)
 
-interface CardLayout {
-  id: string
-  x: number
-  y: number
-  width: number
-  height: number
-  sizePreset: keyof typeof SIZE_PRESETS
-}
+const RecentActivitiesCard = () => (
+  <div className="text-white p-4 bg-slate-800 rounded-lg">Recent Activities Placeholder</div>
+)
 
-const dashboardCards: DashboardCardConfig[] = [
-  {
-    id: 'leads-overview',
-    component: LeadsOverviewCard,
-    title: 'Leads Overview',
-    defaultSize: 'MEDIUM'
-  },
-  // {
-  //   id: 'calendar-todo',
-  //   component: CalendarTodoCard,
-  //   title: 'Kalender & Uppgifter',
-  //   defaultSize: 'SMALL'
-  // },
-  {
-    id: 'economy-overview',
-    component: EconomyOverviewCard,
-    title: 'Ekonomi Översikt',
-    defaultSize: 'LARGE'
-  },
-  {
-    id: 'mail-campaigns',
-    component: MailCampaignsCard,
-    title: 'Mail Kampanjer',
-    defaultSize: 'MEDIUM'
-  },
-  {
-    id: 'recent-activities',
-    component: RecentActivitiesCard,
-    title: 'Senaste Aktiviteter',
-    defaultSize: 'MEDIUM'
-  }
-]
-
-// Simple Grid Layout Card Component
-interface GridCardProps {
-  card: DashboardCardConfig
-  layout: CardLayout
-  isDragMode: boolean
-  onLayoutChange: (id: string, newLayout: Partial<CardLayout>) => void
-}
-
-function GridCard({ card, layout, isDragMode, onLayoutChange }: GridCardProps) {
-  const Component = card.component
-  const [isDragging, setIsDragging] = useState(false)
-
-  // Safety check
-  if (!Component || typeof Component !== 'function') {
-    return (
-      <div
-        style={{
-          position: 'absolute',
-          left: layout.x,
-          top: layout.y,
-          width: layout.width,
-          height: layout.height,
-        }}
-        className="bg-red-500/20 border-2 border-red-500 rounded-xl flex items-center justify-center"
-      >
-        <span className="text-red-300 text-sm">Error: {card.title}</span>
-      </div>
-    )
-  }
-
-  if (!isDragMode) {
-    return (
-      <div
-        style={{
-          position: 'absolute',
-          left: layout.x,
-          top: layout.y,
-          width: layout.width,
-          height: layout.height,
-        }}
-        className="transition-all duration-200"
-      >
-        <Component width={layout.width} height={layout.height} />
-      </div>
-    )
-  }
-
-  return (
-    <div 
-      style={{
-        position: 'absolute',
-        left: layout.x,
-        top: layout.y,
-        width: layout.width,
-        height: layout.height,
-        cursor: isDragging ? 'grabbing' : 'move',
-        zIndex: isDragging ? 1000 : 1
-      }}
-      className={`rounded-2xl transition-all duration-300 ${
-        isDragging 
-          ? 'border-2 border-cyan-400/60 shadow-xl shadow-cyan-400/10 bg-slate-800/60' 
-          : isDragMode
-            ? 'border border-slate-600/40 hover:border-slate-500/60 bg-slate-900/30'
-            : 'border border-slate-700/30 bg-slate-900/20 hover:bg-slate-900/30'
-      }`}
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget || (e.target as HTMLElement).classList.contains('drag-handle')) {
-          setIsDragging(true)
-          const startX = e.clientX - layout.x
-          const startY = e.clientY - layout.y
-          
-          const handleMouseMove = (moveEvent: MouseEvent) => {
-            const newX = Math.max(0, moveEvent.clientX - startX)
-            const newY = Math.max(0, moveEvent.clientY - startY)
-            
-            onLayoutChange(card.id, { x: newX, y: newY })
-          }
-          
-          const handleMouseUp = () => {
-            setIsDragging(false)
-            document.removeEventListener('mousemove', handleMouseMove)
-            document.removeEventListener('mouseup', handleMouseUp)
-          }
-          
-          document.addEventListener('mousemove', handleMouseMove)
-          document.addEventListener('mouseup', handleMouseUp)
-        }
-      }}
-    >
-      {/* Clean Drag Handle */}
-      <div className={`w-full h-10 rounded-t-2xl cursor-move flex items-center px-4 select-none transition-all duration-300 ${
-        isDragMode 
-          ? 'bg-slate-700/60 border-b border-slate-600/30' 
-          : 'bg-slate-800/40 border-b border-slate-700/20'
-      }`}>
-        <span className="text-slate-200 text-sm font-medium truncate">{card.title}</span>
-        
-        {isDragMode && (
-          <div className="ml-auto flex items-center gap-3">
-            <span className="text-xs text-slate-400 hidden sm:block">
-              {layout.sizePreset}
-            </span>
-            <div className="flex gap-1.5">
-              {(['SMALL', 'MEDIUM', 'LARGE'] as const).map(size => (
-                <button
-                  key={size}
-                  className={`w-2 h-2 rounded-full transition-all duration-200 hover:scale-125 ${
-                    layout.sizePreset === size 
-                      ? 'bg-cyan-400 shadow-sm shadow-cyan-400/30' 
-                      : 'bg-slate-500 hover:bg-slate-400'
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    const preset = SIZE_PRESETS[size]
-                    onLayoutChange(card.id, {
-                      width: preset.width,
-                      height: preset.height,
-                      sizePreset: size
-                    })
-                  }}
-                  title={`${size}: ${SIZE_PRESETS[size].width}×${SIZE_PRESETS[size].height}`}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-      
-      {/* Content */}
-      <div className="absolute top-10 left-0 right-0 bottom-0 overflow-hidden rounded-b-2xl">
-        <Component width={layout.width} height={layout.height - 40} />
-      </div>
-    </div>
-  )
-}
-
-// Temporary inline hook
+// Temporary inline hook to avoid import issues
 function useDashboardData() {
   const [data] = useState({
     totalLeads: 0,
@@ -235,6 +43,15 @@ function useDashboardData() {
     monthlyRevenue: 0,
     yearlyRevenue: 0,
     pendingOffers: 0,
+    recentOffers: [],
+    todayTasks: [],
+    todayMeetings: 0,
+    upcomingReminders: [],
+    meetings: [],
+    todos: [],
+    upcomingMeetings: [],
+    completedTodos: 0,
+    pendingTodos: 0,
     totalTodos: 0,
     recentActivities: [],
     loading: false,
@@ -248,229 +65,238 @@ export default function PremiumDashboard() {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [activeModal, setActiveModal] = useState<string | null>(null)
   const [activeSection, setActiveSection] = useState('dashboard')
-  const [isDragMode, setIsDragMode] = useState(false)
-  
-  // Clean layout state with organized positioning
-  const [cardLayouts, setCardLayouts] = useState<Record<string, CardLayout>>(() => {
-    const defaultLayouts: Record<string, CardLayout> = {}
-    
-    // Clean, organized layout with plenty of space
-    const startX = 30
-    const startY = 30
-    const gapX = 30
-    const gapY = 30
-    
-    // Row 1: Key metrics (top priority)
-    defaultLayouts['leads-overview'] = {
-      id: 'leads-overview',
-      x: startX,
-      y: startY,
-      width: SIZE_PRESETS.MEDIUM.width,
-      height: SIZE_PRESETS.MEDIUM.height,
-      sizePreset: 'MEDIUM'
-    }
-    
-    defaultLayouts['economy-overview'] = {
-      id: 'economy-overview',
-      x: startX + SIZE_PRESETS.MEDIUM.width + gapX,
-      y: startY,
-      width: SIZE_PRESETS.MEDIUM.width,
-      height: SIZE_PRESETS.MEDIUM.height,
-      sizePreset: 'MEDIUM'
-    }
-    
-    // Row 2: Planning & Activities 
-    const row2Y = startY + SIZE_PRESETS.MEDIUM.height + gapY
-    
-    defaultLayouts['calendar-todo'] = {
-      id: 'calendar-todo',
-      x: startX,
-      y: row2Y,
-      width: SIZE_PRESETS.MEDIUM.width,
-      height: SIZE_PRESETS.MEDIUM.height,
-      sizePreset: 'MEDIUM'
-    }
-    
-    defaultLayouts['recent-activities'] = {
-      id: 'recent-activities',
-      x: startX + SIZE_PRESETS.MEDIUM.width + gapX,
-      y: row2Y,
-      width: SIZE_PRESETS.MEDIUM.width,
-      height: SIZE_PRESETS.MEDIUM.height,
-      sizePreset: 'MEDIUM'
-    }
-    
-    // Row 3: Marketing
-    const row3Y = row2Y + SIZE_PRESETS.MEDIUM.height + gapY
-    
-    defaultLayouts['mail-campaigns'] = {
-      id: 'mail-campaigns',
-      x: startX,
-      y: row3Y,
-      width: SIZE_PRESETS.MEDIUM.width,
-      height: SIZE_PRESETS.SMALL.height,
-      sizePreset: 'SMALL'
-    }
 
-    return defaultLayouts
-  })
-
-  // Update time
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date())
-    }, 60000)
-    return () => clearInterval(timer)
-  }, [])
-
-  const handleLayoutChange = (cardId: string, newLayout: Partial<CardLayout>) => {
-    setCardLayouts(prev => {
-      const currentLayout = prev[cardId]
-      const updatedLayout = { ...currentLayout, ...newLayout }
-      
-      // Simple position snapping
-      if (newLayout.x !== undefined) updatedLayout.x = Math.max(0, snapToGrid(newLayout.x))
-      if (newLayout.y !== undefined) updatedLayout.y = Math.max(0, snapToGrid(newLayout.y))
-      
-      // Size snapping
-      if (newLayout.width || newLayout.height) {
-        const snappedSize = snapToSizePreset(updatedLayout.width, updatedLayout.height)
-        updatedLayout.width = snappedSize.width
-        updatedLayout.height = snappedSize.height
-        
-        const sizePreset = Object.entries(SIZE_PRESETS).find(([, preset]) => 
-          preset.width === snappedSize.width && preset.height === snappedSize.height
-        )?.[0] as keyof typeof SIZE_PRESETS || 'MEDIUM'
-        updatedLayout.sizePreset = sizePreset
-      }
-      
-      return {
-        ...prev,
-        [cardId]: updatedLayout
-      }
-    })
+  const handleOpenModal = (modalType: string) => {
+    setActiveModal(modalType)
   }
 
-  const toggleDragMode = () => {
-    setIsDragMode(!isDragMode)
-  }
-
-  const openModal = (modalId: string) => {
-    setActiveModal(modalId)
-  }
-
-  const closeModal = () => {
+  const handleCloseModal = () => {
     setActiveModal(null)
   }
 
+  // Uppdatera klockan varje minut för att visa aktuell tid
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // Stagger-animation för cards
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.3
+      }
+    }
+  }
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  }
+
+  // Visa loading state
+  if (dashboardData.loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 bg-cyan-500 rounded-lg animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-300">Laddar dashboard-data...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Visa fel om något gick snett
+  if (dashboardData.error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">{dashboardData.error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors"
+          >
+            Försök igen
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 ios-height-fix">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex">
+      {/* Navigation Sidebar */}
+      {/* <NavigationSidebar 
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+      /> */}
+
       {/* Main Content Area */}
-      <div className="flex-1 min-h-screen overflow-y-auto">
-        {/* Dashboard Content */}
-        <div className="mobile-padding safe-area-top">
-          {/* Clean Header */}
-          <div className="flex items-center justify-between mb-6 md:mb-8 mobile-card bg-slate-900/30 backdrop-blur-md p-4 md:p-6 rounded-2xl border border-slate-700/20">
-            <div>
-              <h1 className="text-xl md:text-3xl font-light text-white mb-1 tracking-wide">
-                Dashboard
-              </h1>
-              <p className="text-slate-400 text-xs md:text-sm font-light">
-                {currentTime.toLocaleDateString('sv-SE', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              </p>
-            </div>
-            
-            {/* Refined Edit Button - Hidden on mobile */}
-            <motion.button
-              onClick={toggleDragMode}
-              className={`hidden md:flex px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
-                isDragMode
-                  ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-lg shadow-cyan-600/25'
-                  : 'bg-slate-800/60 text-slate-300 hover:bg-slate-700/60 border border-slate-600/30'
-              }`}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              {isDragMode ? '✓ Klar' : 'Anpassa Layout'}
-            </motion.button>
-          </div>
+      <div className="flex-1">
+        {/* Subtle background pattern för premium-känsla */}
+        <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(6,182,212,0.03),transparent_70%)] pointer-events-none" />
+        <div className="fixed inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(34,197,94,0.02),transparent_50%)] pointer-events-none" />
+        
+        <div className="relative z-10">
+          {/* Top Navigation Bar - Minimalistisk och exklusiv */}
+          <nav className="sticky top-0 z-40 backdrop-blur-xl bg-slate-950/80 border-b border-slate-800/50">
+            <div className="px-6 py-4">
+              <div className="flex items-center justify-between">
+                {/* Center - Search */}
+                <div className="flex items-center flex-1 max-w-md">
+                  <div className="relative w-full">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">🔍</span>
+                    <input 
+                      type="text"
+                      placeholder="Sök leads, aktiviteter, ordrar..."
+                      className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-300 placeholder-slate-400 focus:border-cyan-500/50 focus:outline-none transition-colors"
+                    />
+                  </div>
+                </div>
 
-          {/* Grid Container - Responsive Layout */}
-          <div className="space-y-4 md:space-y-0">
-            {/* Mobile: Vertical Stack */}
-            <div className="md:hidden space-y-4">
-              {dashboardCards.map((card) => {
-                const Component = card.component
-                return (
-                  <motion.div
-                    key={card.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mobile-card"
+                {/* Right - Actions och notifications */}
+                <div className="flex items-center gap-3">
+                  <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                    {currentTime.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                  
+                  <motion.button
+                    className="relative p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-slate-300 hover:bg-slate-700/50 transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <Component />
-                  </motion.div>
-                )
-              })}
-            </div>
-
-            {/* Desktop: Grid Layout */}
-            <div 
-              className="hidden md:block relative bg-gradient-to-br from-slate-900/10 to-slate-800/10 rounded-3xl p-8 border border-slate-700/20 backdrop-blur-sm"
-              style={{ 
-                minHeight: '900px',
-                width: '100%'
-              }}
-            >
-              {dashboardCards.map((card) => {
-                const layout = cardLayouts[card.id]
-                
-                if (!layout) {
-                  return (
-                    <div key={card.id} className="text-red-400/60 p-4 text-sm">
-                      Missing layout: {card.title}
+                    <span>🔔</span>
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full flex items-center justify-center">
+                      <span className="text-xs text-slate-900 font-bold">3</span>
                     </div>
-                  )
-                }
-                
-                return (
-                  <GridCard
-                    key={card.id}
-                    card={card}
-                    layout={layout}
-                    isDragMode={isDragMode}
-                    onLayoutChange={handleLayoutChange}
-                  />
-                )
-              })}
-              
-              {/* Subtle background grid when in drag mode */}
-              {isDragMode && (
-                <div 
-                  className="absolute inset-0 opacity-5 pointer-events-none"
-                  style={{
-                    backgroundImage: `
-                      linear-gradient(to right, #64748b 1px, transparent 1px),
-                      linear-gradient(to bottom, #64748b 1px, transparent 1px)
-                    `,
-                    backgroundSize: `${GRID_SIZE}px ${GRID_SIZE}px`
-                  }}
-                />
-              )}
+                  </motion.button>
+
+                  <motion.button
+                    onClick={() => setActiveModal('settings')}
+                    className="p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-slate-300 hover:bg-slate-700/50 transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span>⚙️</span>
+                  </motion.button>
+                </div>
+              </div>
             </div>
-          </div>
+          </nav>
+
+        {/* Main Dashboard Content */}
+        <main className="max-w-7xl mx-auto px-6 py-8">
+          {/* Welcome Header - Personal och premium */}
+          <motion.div 
+            className="mb-8"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h2 className="text-3xl font-bold text-slate-100 mb-2">
+                  God {currentTime.getHours() < 12 ? 'morgon' : currentTime.getHours() < 18 ? 'dag' : 'kväll'} 👋
+                </h2>
+                <p className="text-slate-400">
+                  Här är en översikt av dina aktiviteter för {currentTime.toLocaleDateString('sv-SE', { 
+                    weekday: 'long', 
+                    day: 'numeric', 
+                    month: 'long' 
+                  })}
+                </p>
+              </div>
+              
+              {/* Quick Filter Controls - Diskret men användbart */}
+              <div className="flex items-center gap-2">
+                <motion.button
+                  className="flex items-center gap-2 px-3 py-2 bg-slate-800/50 text-slate-400 hover:text-slate-300 rounded-lg text-sm transition-colors"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <span className="w-4 h-4">🔽</span>
+                  Filter
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Quick Stats Row - Premium KPI cards */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <DashboardStats stats={dashboardData} />
+          </motion.div>
+
+          {/* Quick Actions Bar - Strategiskt placerad för produktivitet */}
+          {/* <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="mb-8"
+          >
+            <QuickActionsBar onOpenModal={handleOpenModal} />
+          </motion.div> */}
+
+          {/* Main Cards Grid - Harmonisk layout med optimal informationshierarki */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8"
+          >
+            {/* CRM/Leads Overview - Stor prioritet, tar 2/3 på desktop */}
+            <motion.div variants={cardVariants} className="lg:col-span-8">
+              <LeadsOverviewCard />
+            </motion.div>
+
+            {/* Calendar & Todo - Kompakt men informativ, 1/3 på desktop */}
+            <motion.div variants={cardVariants} className="lg:col-span-4">
+              <CalendarTodoCard />
+            </motion.div>
+
+            {/* Economy Overview - Full bredd för att visa pipeline och siffror */}
+            <motion.div variants={cardVariants} className="lg:col-span-12">
+              <EconomyOverviewCard />
+            </motion.div>
+
+            {/* Mail Campaigns - Halvbredd, jämn vikt med Recent Activities */}
+            <motion.div variants={cardVariants} className="lg:col-span-6">
+              <MailCampaignsCard />
+            </motion.div>
+
+            {/* Recent Activities - Halvbredd, kompletterar Mail Campaigns */}
+            <motion.div variants={cardVariants} className="lg:col-span-6">
+              <RecentActivitiesCard />
+            </motion.div>
+          </motion.div>
+
+          {/* Footer - Diskret men informativ */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1, duration: 0.5 }}
+            className="text-center py-8 border-t border-slate-800/50"
+          >
+            <p className="text-slate-500 text-sm">
+              Senast uppdaterad {currentTime.toLocaleString('sv-SE')} • System status: 
+            </p>
+          </motion.div>
+        </main>
         </div>
       </div>
 
-      <ModalSystem
+      {/* Modal System */}
+      {/* <ModalSystem 
         activeModal={activeModal}
-        onClose={closeModal}
-      />
+        onClose={handleCloseModal}
+      /> */}
     </div>
   )
 }
