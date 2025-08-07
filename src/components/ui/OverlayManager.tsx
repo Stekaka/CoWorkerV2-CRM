@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import SophisticatedModal from '@/components/ui/SophisticatedModal'
-import CalendarDashboard from '@/app/dashboard/components/CalendarDashboard'
-import SophisticatedCRM from '@/app/dashboard/components/SophisticatedCRM'
+// import CalendarDashboard from '@/app/dashboard/components/CalendarDashboard'
+// import SophisticatedCRM from '@/app/dashboard/components/SophisticatedCRM'
 import FinanceDashboard from '@/app/dashboard/components/FinanceDashboard'
 import { OverlayProvider } from './OverlayContext'
 import { Users, Plus, ShoppingCart, TrendingUp } from 'lucide-react'
@@ -303,10 +303,10 @@ export default function OverlayManager({ children }: OverlayManagerProps) {
 
   const renderOverlayContent = () => {
     switch (overlay.type) {
-      case 'calendar-dashboard':
-        return <CalendarDashboard onClose={closeOverlay} />
-      case 'crm':
-        return <SophisticatedCRM />
+      // case 'calendar-dashboard':
+      //   return <CalendarDashboard onClose={closeOverlay} />
+      // case 'crm':
+      //   return <SophisticatedCRM />
       case 'finance':
         return <FinanceDashboard onClose={closeOverlay} />
       case 'leads':

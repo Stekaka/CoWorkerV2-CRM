@@ -22,6 +22,7 @@ import Link from 'next/link'
 interface NavigationSidebarProps {
   activeSection?: string
   onSectionChange?: (section: string) => void
+  onOpenModal?: (modalId: string) => void
   currentTime?: Date
   isDragMode?: boolean
   onToggleDragMode?: () => void

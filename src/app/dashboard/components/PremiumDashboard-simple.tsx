@@ -384,7 +384,6 @@ export default function PremiumDashboard() {
       <ModalSystem
         activeModal={activeModal}
         onClose={closeModal}
-        dashboardData={dashboardData}
       />
     </div>
   )
