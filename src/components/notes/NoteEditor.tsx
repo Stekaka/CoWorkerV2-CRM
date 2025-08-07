@@ -53,13 +53,13 @@ export default function NoteEditor({
   
   const blockRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
 
-  const updateBlocks = useCallback((newBlocks: Block[]) => {
+  const updateBlocks = useCallback((newBlocks: NoteBlock[]) => {
     setBlocks(newBlocks)
     onChange?.(newBlocks)
   }, [onChange])
 
-  const addBlock = (afterId: string, type: Block['type'] = 'text') => {
-    const newBlock: Block = {
+  const addBlock = (afterId: string, type: NoteBlock['type'] = 'text') => {
+    const newBlock: NoteBlock = {
       id: `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       type,
       content: type === 'todo' ? { text: '', checked: false } : '',
@@ -94,7 +94,7 @@ export default function NoteEditor({
     }
   }
 
-  const updateBlock = (blockId: string, updates: Partial<Block>) => {
+  const updateBlock = (blockId: string, updates: Partial<NoteBlock>) => {
     const newBlocks = blocks.map(block => 
       block.id === blockId ? { ...block, ...updates } : block
     )
@@ -271,7 +271,7 @@ export default function NoteEditor({
                         <button
                           key={blockType.type}
                           onClick={() => {
-                            updateBlock(block.id, { type: blockType.type as Block['type'] })
+                            updateBlock(block.id, { type: blockType.type as NoteBlock['type'] })
                             setShowBlockMenu(null)
                           }}
                           className="w-full flex items-center gap-3 p-3 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-left"
@@ -327,7 +327,7 @@ export default function NoteEditor({
                 key={blockType.type}
                 onClick={() => {
                   if (showBlockMenu) {
-                    updateBlock(showBlockMenu, { type: blockType.type as Block['type'] })
+                    updateBlock(showBlockMenu, { type: blockType.type as NoteBlock['type'] })
                   }
                   setCommandMenuPosition(null)
                   setShowBlockMenu(null)
