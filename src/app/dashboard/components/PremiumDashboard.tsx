@@ -6,7 +6,7 @@ import { Resizable } from 'react-resizable'
 import ModalSystem from './ModalSystem'
 import DashboardStats from './dashboard-components/DashboardStats'
 import LeadsOverviewCard from './dashboard-components/LeadsOverviewCard'
-import CalendarTodoCard from './dashboard-components/CalendarTodoCard'
+// import CalendarTodoCard from './dashboard-components/CalendarTodoCard'
 import EconomyOverviewCard from './dashboard-components/EconomyOverviewCard'
 import MailCampaignsCard from './dashboard-components/MailCampaignsCard'
 import RecentActivitiesCard from './dashboard-components/RecentActivitiesCard'
@@ -62,12 +62,12 @@ const dashboardCards: DashboardCardConfig[] = [
     title: 'Leads Overview',
     defaultSize: 'MEDIUM'
   },
-  {
-    id: 'calendar-todo',
-    component: CalendarTodoCard,
-    title: 'Kalender & Uppgifter',
-    defaultSize: 'SMALL'
-  },
+  // {
+  //   id: 'calendar-todo',
+  //   component: CalendarTodoCard,
+  //   title: 'Kalender & Uppgifter',
+  //   defaultSize: 'SMALL'
+  // },
   {
     id: 'economy-overview',
     component: EconomyOverviewCard,
