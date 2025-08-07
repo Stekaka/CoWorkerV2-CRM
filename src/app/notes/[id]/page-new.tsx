@@ -42,7 +42,7 @@ export default function EditNotePage({ params }: { params: { id: string } }) {
     }
   }
 
-  const handleBlocksChange = async (blocks: Block[]) => {
+  const handleBlocksChange = async (blocks: NoteBlock[]) => {
     if (!note) return
     
     // Filter out unsupported block types and convert to NoteBlock format
@@ -52,7 +52,7 @@ export default function EditNotePage({ params }: { params: { id: string } }) {
         id: block.id,
         type: block.type as 'text' | 'heading' | 'list' | 'todo' | 'quote' | 'code',
         content: typeof block.content === 'string' ? block.content : JSON.stringify(block.content),
-        data: block.metadata
+        data: block.data
       }))
     
     try {
