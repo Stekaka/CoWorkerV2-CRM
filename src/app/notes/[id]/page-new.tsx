@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Save, Share, MoreVertical, Star, Archive, Trash } from 'lucide-react'
-import NoteEditor from '@/components/notes/NoteEditor'
+import NoteEditor, { Block } from '@/components/notes/NoteEditor'
 import { useNote } from '@/hooks/useAPI'
 import { NoteBlock } from '@/lib/supabase'
 
@@ -42,12 +42,22 @@ export default function EditNotePage({ params }: { params: { id: string } }) {
     }
   }
 
-  const handleBlocksChange = async (newBlocks: NoteBlock[]) => {
+  const handleBlocksChange = async (blocks: Block[]) => {
     if (!note) return
+    
+    // Filter out unsupported block types and convert to NoteBlock format
+    const supportedBlocks: NoteBlock[] = blocks
+      .filter(block => ['text', 'heading', 'list', 'todo', 'quote', 'code'].includes(block.type))
+      .map(block => ({
+        id: block.id,
+        type: block.type as 'text' | 'heading' | 'list' | 'todo' | 'quote' | 'code',
+        content: typeof block.content === 'string' ? block.content : JSON.stringify(block.content),
+        data: block.metadata
+      }))
     
     try {
       await updateNote({
-        content: newBlocks
+        content: supportedBlocks
       })
     } catch (error) {
       console.error('Failed to update blocks:', error)
@@ -173,7 +183,12 @@ export default function EditNotePage({ params }: { params: { id: string } }) {
           transition={{ duration: 0.5 }}
         >
           <NoteEditor
-            blocks={note.content}
+            initialBlocks={note.content.map(block => ({
+              id: block.id,
+              type: block.type as Block['type'],
+              content: block.content,
+              metadata: block.data
+            }))}
             onChange={handleBlocksChange}
           />
         </motion.div>
