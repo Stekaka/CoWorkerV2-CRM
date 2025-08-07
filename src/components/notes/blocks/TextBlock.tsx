@@ -72,7 +72,7 @@ export default function TextBlock({
         onUpdate({ type: 'list', content: '', metadata: { type: 'numbered' } })
       } else if (value.endsWith('[]')) {
         e.preventDefault()
-        onUpdate({ type: 'todo', content: { text: '', checked: false } })
+        onUpdate({ type: 'todo', content: '' })
       } else if (value.endsWith('>')) {
         e.preventDefault()
         onUpdate({ type: 'quote', content: '' })

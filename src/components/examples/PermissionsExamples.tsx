@@ -24,12 +24,12 @@ export function DashboardWithPermissions() {
         <h1 className="text-2xl font-bold">Dashboard</h1>
         
         {/* Admin-länk visas bara för administratörer */}
-        <PermissionGate requiredRole="admin">
+        {isAdmin && (
           <Button variant="outline">
             <Crown className="w-4 h-4 mr-2" />
             Administratörspanel
           </Button>
-        </PermissionGate>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -185,7 +185,7 @@ export function NavigationWithPermissions() {
 export function OfferBuilderWithPermissions() {
   return (
     <PermissionGate 
-      requiredModule="offers"
+      module="offers"
       fallback={
         <Card className="p-6 text-center">
           <h3 className="font-semibold mb-2">Offerter-modulen krävs</h3>

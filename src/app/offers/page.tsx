@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { OfferBuilder } from '@/components/offers/OfferBuilder';
+import OfferBuilder from '@/components/offers/OfferBuilder-simple';
 import { Offer } from '@/types/offers';
 
 export default function OffersPage() {

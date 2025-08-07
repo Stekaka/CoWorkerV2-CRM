@@ -20,6 +20,7 @@ import {
   Trash2,
   MoreHorizontal
 } from 'lucide-react'
+import { NoteBlock } from '@/lib/supabase'
 import TextBlock from '@/components/notes/blocks/TextBlock'
 import TodoBlock from '@/components/notes/blocks/TodoBlock'
 import HeadingBlock from '@/components/notes/blocks/HeadingBlock'
@@ -27,21 +28,9 @@ import ListBlock from '@/components/notes/blocks/ListBlock'
 import QuoteBlock from '@/components/notes/blocks/QuoteBlock'
 import CodeBlock from '@/components/notes/blocks/CodeBlock'
 
-export interface Block {
-  id: string
-  type: 'text' | 'heading' | 'todo' | 'list' | 'quote' | 'code' | 'image' | 'divider'
-  content: any
-  metadata?: {
-    level?: number // For headings (1-6)
-    checked?: boolean // For todos
-    language?: string // For code blocks
-    style?: string // For custom styling
-  }
-}
-
 interface NoteEditorProps {
-  initialBlocks?: Block[]
-  onChange?: (blocks: Block[]) => void
+  initialBlocks?: NoteBlock[]
+  onChange?: (blocks: NoteBlock[]) => void
   placeholder?: string
 }
 

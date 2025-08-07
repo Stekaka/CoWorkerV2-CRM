@@ -111,22 +111,22 @@ export default function NoteCard({ note, view }: NoteCardProps) {
                 )}
 
                 {/* Linked To */}
-                {note.linkedTo && (
+                {/* {note.linkedTo && (
                   <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-medium ${getLinkedColor(note.linkedTo.type)}`}>
                     {getLinkedIcon(note.linkedTo.type)}
                     {note.linkedTo.name}
                   </div>
-                )}
+                )} */}
               </div>
 
               <div className="flex items-center gap-4 text-xs text-slate-500">
                 <div className="flex items-center gap-1">
                   <FileText className="w-3 h-3" />
-                  {note.blocksCount} block{note.blocksCount !== 1 ? '' : ''}
+                  {note.content?.length || 0} block{(note.content?.length || 0) !== 1 ? 's' : ''}
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
-                  {formatDistanceToNow(note.updatedAt, { addSuffix: true, locale: sv })}
+                  {formatDistanceToNow(new Date(note.updated_at), { addSuffix: true, locale: sv })}
                 </div>
               </div>
             </div>
@@ -149,7 +149,7 @@ export default function NoteCard({ note, view }: NoteCardProps) {
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white truncate">
             {note.title || 'Untitled'}
           </h3>
-          {note.isPinned && (
+          {note.is_pinned && (
             <Star className="w-4 h-4 text-amber-500 fill-amber-500 flex-shrink-0" />
           )}
         </div>
@@ -159,14 +159,14 @@ export default function NoteCard({ note, view }: NoteCardProps) {
       </div>
 
       {/* Urgent Badge */}
-      {note.hasUrgentTodos && (
+      {/* {note.hasUrgentTodos && (
         <div className="flex items-center gap-2 mb-4">
           <div className="flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-xs font-medium">
             <AlertCircle className="w-3 h-3" />
             Innehåller brådskande uppgifter
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Preview */}
       {previewText && (
@@ -200,24 +200,24 @@ export default function NoteCard({ note, view }: NoteCardProps) {
       )}
 
       {/* Linked To */}
-      {note.linkedTo && (
+      {/* {note.linkedTo && (
         <div className="mb-4">
           <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium ${getLinkedColor(note.linkedTo.type)}`}>
             {getLinkedIcon(note.linkedTo.type)}
             <span>Kopplad till {note.linkedTo.name}</span>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Footer */}
       <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-700">
         <div className="flex items-center gap-1 text-xs text-slate-500">
           <FileText className="w-3 h-3" />
-          <span>{note.blocksCount} block{note.blocksCount !== 1 ? '' : ''}</span>
+          <span>{note.content.length} block{note.content.length !== 1 ? 's' : ''}</span>
         </div>
         <div className="flex items-center gap-1 text-xs text-slate-500">
           <Clock className="w-3 h-3" />
-          <span>{formatDistanceToNow(note.updatedAt, { addSuffix: true, locale: sv })}</span>
+          <span>{formatDistanceToNow(note.updated_at, { addSuffix: true, locale: sv })}</span>
         </div>
       </div>
     </motion.div>

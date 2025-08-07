@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Save, Share, MoreVertical, Star, Archive, Trash } from 'lucide-react'
-import NoteEditor, { Block } from '@/components/notes/NoteEditor'
+import NoteEditor from '@/components/notes/NoteEditor-simple'
 import { useNote } from '@/hooks/useAPI'
 import { NoteBlock } from '@/lib/supabase'
 
@@ -42,7 +42,7 @@ export default function EditNotePage({ params }: { params: { id: string } }) {
     }
   }
 
-  const handleBlocksChange = async (blocks: Block[]) => {
+  const handleBlocksChange = async (blocks: NoteBlock[]) => {
     if (!note) return
     
     // Filter out unsupported block types and convert to NoteBlock format
@@ -185,7 +185,7 @@ export default function EditNotePage({ params }: { params: { id: string } }) {
           <NoteEditor
             initialBlocks={note.content.map(block => ({
               id: block.id,
-              type: block.type as Block['type'],
+              type: block.type,
               content: block.content,
               metadata: block.data
             }))}
