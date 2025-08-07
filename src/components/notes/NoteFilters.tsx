@@ -26,9 +26,6 @@ interface NoteFiltersProps {
 export default function NoteFilters({ selectedTags, onTagsChange, notes }: NoteFiltersProps) {
   // Extract all unique tags from notes
   const allTags = Array.from(new Set(notes.flatMap(note => note.tags)))
-  
-  // Extract all unique tags
-  const allTags = Array.from(new Set(notes.flatMap(note => note.tags)))
 
   const toggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
