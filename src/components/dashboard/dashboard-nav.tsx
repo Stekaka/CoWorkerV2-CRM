@@ -33,7 +33,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Leads', href: '/dashboard/leads', icon: Users },
   { name: 'E-post', href: '/dashboard/email', icon: Mail },
-  { name: 'Påminnelser', href: '/dashboard/reminders', icon: Calendar },
+  { name: 'Kalender', href: '/dashboard/calendar', icon: Calendar },
   { name: 'Inställningar', href: '/dashboard/settings', icon: Settings },
 ]
 

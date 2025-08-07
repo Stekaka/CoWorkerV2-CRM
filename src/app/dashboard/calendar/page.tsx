@@ -1,235 +1,458 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, Calendar, Plus } from 'lucide-react'
-import BottomNav from '../components/BottomNav'
+import { ChevronLeft, ChevronRight, Plus, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
+import StandaloneBottomNav from '../components/StandaloneBottomNav'
 
 interface CalendarEvent {
   id: string
   title: string
+  description?: string
   date: string
   time: string
   type: 'meeting' | 'call' | 'task' | 'reminder'
-  color: string
+  status: 'upcoming' | 'completed' | 'cancelled'
+  customer?: string
 }
 
-export default function CalendarView() {
+export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
-  
-  // TODO: Hämta events från API baserat på vald månad
-  const mockEvents: CalendarEvent[] = [
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [showEventModal, setShowEventModal] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+  const [showNewEventModal, setShowNewEventModal] = useState(false)
+
+  // Mock events data
+  const events: CalendarEvent[] = [
     {
       id: '1',
       title: 'Demo med Acme Corp',
-      date: '2025-08-05',
+      description: 'Produktdemonstration av CRM-systemet',
+      date: '2024-08-15',
       time: '09:00',
       type: 'meeting',
-      color: 'bg-blue-500'
+      status: 'upcoming',
+      customer: 'Acme Corp'
     },
     {
       id: '2',
-      title: 'Ring John Doe',
-      date: '2025-08-05',
+      title: 'Ring tillbaka John Doe',
+      description: 'Uppföljning av förfrågan om licenser',
+      date: '2024-08-15',
       time: '11:30',
       type: 'call',
-      color: 'bg-green-500'
+      status: 'upcoming',
+      customer: 'TechStart AB'
     },
     {
       id: '3',
-      title: 'Skicka offert',
-      date: '2025-08-06',
+      title: 'Offert till Nordic Solutions',
+      description: 'Skicka prisförslag för integration',
+      date: '2024-08-16',
       time: '14:00',
       type: 'task',
-      color: 'bg-orange-500'
+      status: 'upcoming'
     },
     {
       id: '4',
-      title: 'Uppföljning lead',
-      date: '2025-08-07',
+      title: 'Team-möte',
+      description: 'Veckomöte med utvecklingsteam',
+      date: '2024-08-16',
+      time: '16:00',
+      type: 'meeting',
+      status: 'completed'
+    },
+    {
+      id: '5',
+      title: 'Kunduppföljning',
+      description: 'Kontrollera att implementation fungerar',
+      date: '2024-08-20',
       time: '10:00',
-      type: 'reminder',
-      color: 'bg-purple-500'
+      type: 'call',
+      status: 'upcoming',
+      customer: 'StartupXYZ'
     }
   ]
-
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear()
-    const month = date.getMonth()
-    const firstDay = new Date(year, month, 1)
-    const lastDay = new Date(year, month + 1, 0)
-    const daysInMonth = lastDay.getDate()
-    const startingDayOfWeek = firstDay.getDay()
-    
-    const days = []
-    
-    // Lägg till tomma celler för dagar innan månaden börjar
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null)
-    }
-    
-    // Lägg till alla dagar i månaden
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push(i)
-    }
-    
-    return days
-  }
-
-  const getEventsForDate = (day: number) => {
-    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    return mockEvents.filter(event => event.date === dateStr)
-  }
-
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => {
-      const newDate = new Date(prev)
-      if (direction === 'prev') {
-        newDate.setMonth(prev.getMonth() - 1)
-      } else {
-        newDate.setMonth(prev.getMonth() + 1)
-      }
-      return newDate
-    })
-  }
 
   const monthNames = [
     'Januari', 'Februari', 'Mars', 'April', 'Maj', 'Juni',
     'Juli', 'Augusti', 'September', 'Oktober', 'November', 'December'
   ]
 
-  const weekdays = ['Sön', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör']
-  const days = getDaysInMonth(currentDate)
-  const today = new Date()
-  const isCurrentMonth = currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear()
+  const dayNames = ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön']
+
+  const getFirstDayOfMonth = (date: Date) => {
+    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1)
+    return firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1
+  }
+
+  const getDaysInMonth = (date: Date) => {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+  }
+
+  const getEventsForDate = (dateStr: string) => {
+    return events.filter(event => event.date === dateStr)
+  }
+
+  const formatDateForComparison = (day: number) => {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth() + 1
+    return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+  }
+
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    const newDate = new Date(currentDate)
+    if (direction === 'prev') {
+      newDate.setMonth(currentDate.getMonth() - 1)
+    } else {
+      newDate.setMonth(currentDate.getMonth() + 1)
+    }
+    setCurrentDate(newDate)
+  }
+
+  const handleDateClick = (day: number) => {
+    const dateStr = formatDateForComparison(day)
+    setSelectedDate(dateStr)
+    const dayEvents = getEventsForDate(dateStr)
+    if (dayEvents.length === 1) {
+      setSelectedEvent(dayEvents[0])
+      setShowEventModal(true)
+    }
+  }
+
+  const getEventTypeColor = (type: CalendarEvent['type']) => {
+    switch (type) {
+      case 'meeting': return 'bg-blue-500'
+      case 'call': return 'bg-green-500'
+      case 'task': return 'bg-amber-500'
+      case 'reminder': return 'bg-purple-500'
+      default: return 'bg-slate-500'
+    }
+  }
+
+  const getEventTypeIcon = (type: CalendarEvent['type']) => {
+    switch (type) {
+      case 'meeting': return '👥'
+      case 'call': return '📞'
+      case 'task': return '📋'
+      case 'reminder': return '⏰'
+      default: return '📅'
+    }
+  }
+
+  const renderCalendarGrid = () => {
+    const firstDay = getFirstDayOfMonth(currentDate)
+    const daysInMonth = getDaysInMonth(currentDate)
+    const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7
+    const cells = []
+
+    for (let i = 0; i < totalCells; i++) {
+      const dayNumber = i - firstDay + 1
+      const isCurrentMonth = dayNumber > 0 && dayNumber <= daysInMonth
+      const dateStr = isCurrentMonth ? formatDateForComparison(dayNumber) : ''
+      const dayEvents = isCurrentMonth ? getEventsForDate(dateStr) : []
+      const isToday = isCurrentMonth && 
+        new Date().toISOString().split('T')[0] === dateStr
+      const isSelected = selectedDate === dateStr
+
+      cells.push(
+        <div
+          key={i}
+          className={`
+            min-h-[100px] border border-slate-700 p-2 cursor-pointer transition-colors
+            ${isCurrentMonth ? 'bg-slate-800/30 hover:bg-slate-800/50' : 'bg-slate-900/20'}
+            ${isToday ? 'ring-2 ring-blue-500' : ''}
+            ${isSelected ? 'bg-slate-700/50' : ''}
+          `}
+          onClick={() => isCurrentMonth && handleDateClick(dayNumber)}
+        >
+          {isCurrentMonth && (
+            <>
+              <div className={`text-sm font-medium mb-1 ${isToday ? 'text-blue-400' : 'text-white'}`}>
+                {dayNumber}
+              </div>
+              <div className="space-y-1">
+                {dayEvents.slice(0, 3).map(event => (
+                  <div
+                    key={event.id}
+                    className={`
+                      text-xs px-2 py-1 rounded text-white truncate cursor-pointer
+                      ${getEventTypeColor(event.type)}
+                      ${event.status === 'completed' ? 'opacity-60 line-through' : ''}
+                    `}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedEvent(event)
+                      setShowEventModal(true)
+                    }}
+                  >
+                    {getEventTypeIcon(event.type)} {event.title}
+                  </div>
+                ))}
+                {dayEvents.length > 3 && (
+                  <div className="text-xs text-slate-400 px-2">
+                    +{dayEvents.length - 3} fler
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      )
+    }
+
+    return cells
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 text-white">
-      <div className="pb-20 px-4 pt-8">
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Calendar className="w-6 h-6 text-white" />
-              <h1 className="text-2xl font-bold text-white">Kalender</h1>
+    <div className="min-h-screen bg-slate-950 text-white relative">
+      <div className="pb-28 px-4 pt-8 max-w-7xl mx-auto">
+        {/* Back Button */}
+        <div className="mb-6">
+          <Link 
+            href="/dashboard"
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Tillbaka till Dashboard
+          </Link>
+        </div>
+
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-white">🗓️ Kalender (UPPDATERAD)</h1>
+              <p className="text-slate-400 text-lg mt-2">Hantera möten, uppgifter och påminnelser - Outlook-stil</p>
             </div>
-            <button className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all">
-              <Plus className="w-5 h-5 text-white" />
+            
+            <button
+              onClick={() => setShowNewEventModal(true)}
+              className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg py-3 px-6 text-white transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Ny Händelse
             </button>
           </div>
 
-          {/* Calendar Header */}
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">
-                {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-              </h2>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => navigateMonth('prev')}
-                  className="w-10 h-10 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center hover:bg-white/20 transition-all"
-                >
-                  <ChevronLeft className="w-5 h-5 text-white" />
-                </button>
-                <button
-                  onClick={() => navigateMonth('next')}
-                  className="w-10 h-10 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center hover:bg-white/20 transition-all"
-                >
-                  <ChevronRight className="w-5 h-5 text-white" />
-                </button>
+          {/* Calendar Navigation */}
+          <div className="flex items-center justify-between bg-slate-800/30 border border-slate-700 rounded-xl p-4">
+            <button
+              onClick={() => navigateMonth('prev')}
+              className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            
+            <h2 className="text-2xl font-bold">
+              {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+            </h2>
+            
+            <button
+              onClick={() => navigateMonth('next')}
+              className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Calendar Grid */}
+        <div className="bg-slate-800/30 border border-slate-700 rounded-xl overflow-hidden">
+          {/* Day Headers */}
+          <div className="grid grid-cols-7 bg-slate-800/50">
+            {dayNames.map(day => (
+              <div key={day} className="p-4 text-center font-medium text-slate-300 border-r border-slate-700 last:border-r-0">
+                {day}
               </div>
-            </div>
+            ))}
+          </div>
+          
+          {/* Calendar Days */}
+          <div className="grid grid-cols-7">
+            {renderCalendarGrid()}
+          </div>
+        </div>
 
-            {/* Weekday Headers */}
-            <div className="grid grid-cols-7 gap-2 mb-4">
-              {weekdays.map((day) => (
-                <div key={day} className="text-center py-2 text-sm font-medium text-gray-300">
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            {/* Calendar Days */}
-            <div className="grid grid-cols-7 gap-2">
-              {days.map((day, index) => {
-                if (!day) {
-                  return <div key={index} className="aspect-square" />
-                }
-
-                const isToday = isCurrentMonth && day === today.getDate()
-                const events = getEventsForDate(day)
-
-                return (
-                  <div
-                    key={day}
-                    className={`
-                      aspect-square p-2 rounded-xl border transition-all cursor-pointer hover:bg-white/10
-                      ${isToday 
-                        ? 'bg-gradient-to-br from-blue-500 to-purple-600 border-transparent text-white shadow-lg' 
-                        : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/20'
-                      }
-                    `}
-                  >
-                    <div className="flex flex-col h-full">
-                      <span className={`text-sm font-medium ${isToday ? 'text-white' : 'text-gray-300'}`}>
-                        {day}
-                      </span>
-                      
-                      {/* Events indicators */}
-                      <div className="flex-1 mt-1 space-y-1">
-                        {events.slice(0, 2).map((event) => (
-                          <div
-                            key={event.id}
-                            className={`
-                              w-full h-1 rounded-full ${event.color}
-                            `}
-                            title={`${event.time} - ${event.title}`}
-                          />
-                        ))}
-                        {events.length > 2 && (
-                          <div className="text-xs text-gray-400 text-center">
-                            +{events.length - 2}
-                          </div>
-                        )}
-                      </div>
+        {/* Today's Events */}
+        <div className="mt-8">
+          <h3 className="text-xl font-bold text-white mb-4">Dagens händelser</h3>
+          <div className="space-y-3">
+            {events.filter(event => event.date === new Date().toISOString().split('T')[0]).map(event => (
+              <div
+                key={event.id}
+                className="bg-slate-800/30 border border-slate-700 rounded-xl p-4 cursor-pointer hover:bg-slate-800/50 transition-colors"
+                onClick={() => {
+                  setSelectedEvent(event)
+                  setShowEventModal(true)
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full ${getEventTypeColor(event.type)}`} />
+                    <div>
+                      <div className="font-medium text-white">{event.title}</div>
+                      <div className="text-sm text-slate-400">{event.time} {event.customer && `• ${event.customer}`}</div>
                     </div>
                   </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Upcoming Events */}
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-white mb-4">Kommande händelser</h3>
-            <div className="space-y-3">
-              {mockEvents.slice(0, 4).map((event) => (
-                <div
-                  key={event.id}
-                  className="flex items-center space-x-4 p-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl hover:bg-white/10 transition-all"
-                >
-                  <div className={`w-3 h-3 rounded-full ${event.color}`} />
-                  <div className="flex-1">
-                    <h4 className="font-medium text-white">{event.title}</h4>
-                    <p className="text-sm text-gray-400">{event.date} kl {event.time}</p>
-                  </div>
-                  <span className={`
-                    px-2 py-1 rounded-full text-xs font-medium
-                    ${event.type === 'meeting' ? 'bg-blue-500/20 text-blue-300' :
-                      event.type === 'call' ? 'bg-green-500/20 text-green-300' :
-                      event.type === 'task' ? 'bg-orange-500/20 text-orange-300' :
-                      'bg-purple-500/20 text-purple-300'}
-                  `}>
-                    {event.type === 'meeting' ? 'Möte' :
-                     event.type === 'call' ? 'Samtal' :
-                     event.type === 'task' ? 'Uppgift' : 'Påminnelse'}
-                  </span>
+                  <div className="text-2xl">{getEventTypeIcon(event.type)}</div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <BottomNav />
+      {/* Event Detail Modal */}
+      {showEventModal && selectedEvent && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-md">
+            <div className="p-6 border-b border-slate-700">
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`w-4 h-4 rounded-full ${getEventTypeColor(selectedEvent.type)}`} />
+                <h2 className="text-xl font-bold text-white">{selectedEvent.title}</h2>
+              </div>
+              <div className="text-slate-400">
+                {selectedEvent.date} • {selectedEvent.time}
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              {selectedEvent.customer && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Kund</label>
+                  <div className="text-white">{selectedEvent.customer}</div>
+                </div>
+              )}
+              
+              {selectedEvent.description && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Beskrivning</label>
+                  <div className="text-white">{selectedEvent.description}</div>
+                </div>
+              )}
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Typ</label>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{getEventTypeIcon(selectedEvent.type)}</span>
+                  <span className="text-white capitalize">{selectedEvent.type}</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Status</label>
+                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                  selectedEvent.status === 'completed' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' :
+                  selectedEvent.status === 'cancelled' ? 'text-red-400 bg-red-500/10 border-red-500/20' :
+                  'text-amber-400 bg-amber-500/10 border-amber-500/20'
+                }`}>
+                  {selectedEvent.status === 'upcoming' ? 'Kommande' :
+                   selectedEvent.status === 'completed' ? 'Slutförd' : 'Avbruten'}
+                </span>
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-slate-700 flex gap-3">
+              <button
+                onClick={() => setShowEventModal(false)}
+                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 px-4 rounded-lg transition-colors"
+              >
+                Stäng
+              </button>
+              <button
+                className="flex-1 bg-slate-600 hover:bg-slate-500 text-white py-3 px-4 rounded-lg transition-colors"
+              >
+                Redigera
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Event Modal */}
+      {showNewEventModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-md">
+            <div className="p-6 border-b border-slate-700">
+              <h2 className="text-xl font-bold text-white">Ny Händelse</h2>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Titel *</label>
+                <input
+                  type="text"
+                  className="w-full bg-slate-900 border border-slate-600 rounded-lg py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+                  placeholder="Möte med kund..."
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Datum *</label>
+                <input
+                  type="date"
+                  className="w-full bg-slate-900 border border-slate-600 rounded-lg py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Tid *</label>
+                <input
+                  type="time"
+                  className="w-full bg-slate-900 border border-slate-600 rounded-lg py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Typ</label>
+                <select className="w-full bg-slate-900 border border-slate-600 rounded-lg py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-slate-500">
+                  <option value="meeting">👥 Möte</option>
+                  <option value="call">📞 Samtal</option>
+                  <option value="task">📋 Uppgift</option>
+                  <option value="reminder">⏰ Påminnelse</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Kund (valfri)</label>
+                <input
+                  type="text"
+                  className="w-full bg-slate-900 border border-slate-600 rounded-lg py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+                  placeholder="Kundnamn..."
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Beskrivning (valfri)</label>
+                <textarea
+                  className="w-full bg-slate-900 border border-slate-600 rounded-lg py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+                  placeholder="Beskrivning av händelsen..."
+                  rows={3}
+                />
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-slate-700 flex gap-3">
+              <button
+                onClick={() => setShowNewEventModal(false)}
+                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 px-4 rounded-lg transition-colors"
+              >
+                Avbryt
+              </button>
+              <button
+                className="flex-1 bg-slate-600 hover:bg-slate-500 text-white py-3 px-4 rounded-lg transition-colors"
+              >
+                Skapa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Navigation */}
+      <StandaloneBottomNav />
     </div>
   )
 }
