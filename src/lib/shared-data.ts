@@ -11,48 +11,7 @@ export interface Order {
 }
 
 // Mock orders data - this would normally come from Supabase
-export const mockOrders: Order[] = [
-  { 
-    id: '1', 
-    customer_name: 'Acme Corp', 
-    order_number: 'ORD-001', 
-    amount: 150000, 
-    status: 'confirmed', 
-    created_at: '2024-08-01', 
-    description: 'CRM Implementation Package',
-    category: 'implementation' 
-  },
-  { 
-    id: '2', 
-    customer_name: 'TechStart AB', 
-    order_number: 'ORD-002', 
-    amount: 75000, 
-    status: 'pending', 
-    created_at: '2024-08-03', 
-    description: 'CRM License Renewal',
-    category: 'license' 
-  },
-  { 
-    id: '3', 
-    customer_name: 'Nordic Solutions', 
-    order_number: 'ORD-003', 
-    amount: 200000, 
-    status: 'completed', 
-    created_at: '2024-07-28', 
-    description: 'Custom Integration Service',
-    category: 'integration' 
-  },
-  { 
-    id: '4', 
-    customer_name: 'StartupXYZ', 
-    order_number: 'ORD-004', 
-    amount: 50000, 
-    status: 'cancelled', 
-    created_at: '2024-08-05', 
-    description: 'Support & Maintenance Package',
-    category: 'support' 
-  },
-]
+export const mockOrders: Order[] = []
 
 // Helper functions for data consistency
 export const getOrdersByMonth = (orders: Order[], month: string, year: string = '2024') => {

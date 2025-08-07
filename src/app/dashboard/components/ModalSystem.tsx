@@ -245,7 +245,7 @@ export default function ModalSystem({ activeModal, onClose }: ModalSystemProps) 
               Avbryt
             </button>
             <button
-              onClick={() => handleSubmit(activeModal)}
+              onClick={() => activeModal && handleSubmit(activeModal)}
               className={`flex-1 py-3 px-6 bg-gradient-to-r ${config.color} hover:opacity-90 text-white font-medium rounded-lg transition-all duration-200 shadow-lg`}
             >
               Spara

@@ -34,63 +34,7 @@ interface QuoteItem {
   total: number
 }
 
-const initialQuotes: Quote[] = [
-  {
-    id: '1',
-    number: 'OFF-2024-001',
-    client: 'TechFlow AB',
-    title: 'Utveckling av CRM-system',
-    amount: 250000,
-    status: 'approved',
-    createdDate: '2024-01-10',
-    expiryDate: '2024-01-25',
-    clientEmail: 'kontakt@techflow.se',
-    clientPhone: '+46 8 123 456',
-    clientAddress: 'Storgatan 1, 111 20 Stockholm',
-    taxRate: 25,
-    discount: 0,
-    items: [
-      { id: '1', description: 'Systemdesign och arkitektur', quantity: 40, unitPrice: 1500, total: 60000 },
-      { id: '2', description: 'Frontend utveckling', quantity: 80, unitPrice: 1200, total: 96000 },
-      { id: '3', description: 'Backend utveckling', quantity: 60, unitPrice: 1400, total: 84000 },
-      { id: '4', description: 'Testing och kvalitetssäkring', quantity: 10, unitPrice: 1000, total: 10000 }
-    ],
-    notes: 'Inkluderar 6 månaders support efter leverans'
-  },
-  {
-    id: '2',
-    number: 'OFF-2024-002',
-    client: 'Nordic Solutions',
-    title: 'Konsultuppdrag Q1',
-    amount: 180000,
-    status: 'sent',
-    createdDate: '2024-01-12',
-    expiryDate: '2024-01-27',
-    clientEmail: 'info@nordicsolutions.se',
-    taxRate: 25,
-    items: [
-      { id: '1', description: 'Strategisk rådgivning', quantity: 20, unitPrice: 2000, total: 40000 },
-      { id: '2', description: 'Projektledning', quantity: 40, unitPrice: 1800, total: 72000 },
-      { id: '3', description: 'Teknisk implementation', quantity: 60, unitPrice: 1500, total: 90000 }
-    ]
-  },
-  {
-    id: '3',
-    number: 'OFF-2024-003',
-    client: 'StartupCorp',
-    title: 'MVP Utveckling',
-    amount: 95000,
-    status: 'draft',
-    createdDate: '2024-01-14',
-    expiryDate: '2024-01-29',
-    taxRate: 25,
-    items: [
-      { id: '1', description: 'Prototyp utveckling', quantity: 30, unitPrice: 1300, total: 39000 },
-      { id: '2', description: 'UI/UX Design', quantity: 20, unitPrice: 1400, total: 28000 },
-      { id: '3', description: 'Grundläggande funktionalitet', quantity: 40, unitPrice: 1200, total: 48000 }
-    ]
-  }
-]
+const initialQuotes: Quote[] = []
 
 const getStatusColor = (status: Quote['status']) => {
   switch (status) {

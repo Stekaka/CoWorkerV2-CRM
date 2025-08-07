@@ -23,58 +23,9 @@ interface BudgetItem {
   percentage: number
 }
 
-const mockTransactions: Transaction[] = [
-  {
-    id: '1',
-    type: 'income',
-    category: 'Försäljning',
-    description: 'TechFlow AB - Projekt Alpha',
-    amount: 250000,
-    date: '2024-01-15',
-    client: 'TechFlow AB'
-  },
-  {
-    id: '2',
-    type: 'income',
-    category: 'Försäljning',
-    description: 'Nordic Solutions - Konsultuppdrag',
-    amount: 180000,
-    date: '2024-01-12',
-    client: 'Nordic Solutions'
-  },
-  {
-    id: '3',
-    type: 'expense',
-    category: 'Marknadsföring',
-    description: 'LinkedIn Ads - Q1 kampanj',
-    amount: -15000,
-    date: '2024-01-10'
-  },
-  {
-    id: '4',
-    type: 'expense',
-    category: 'Verktyg & Software',
-    description: 'CRM-licenser månad',
-    amount: -12000,
-    date: '2024-01-08'
-  },
-  {
-    id: '5',
-    type: 'expense',
-    category: 'Kontor',
-    description: 'Hyra kontor januari',
-    amount: -25000,
-    date: '2024-01-01'
-  }
-]
+const mockTransactions: Transaction[] = []
 
-const mockBudget: BudgetItem[] = [
-  { id: '1', category: 'Marknadsföring', budgeted: 50000, spent: 15000, remaining: 35000, percentage: 30 },
-  { id: '2', category: 'Verktyg & Software', budgeted: 40000, spent: 12000, remaining: 28000, percentage: 30 },
-  { id: '3', category: 'Kontor', budgeted: 100000, spent: 25000, remaining: 75000, percentage: 25 },
-  { id: '4', category: 'Personal', budgeted: 300000, spent: 0, remaining: 300000, percentage: 0 },
-  { id: '5', category: 'Resor', budgeted: 30000, spent: 0, remaining: 30000, percentage: 0 }
-]
+const mockBudget: BudgetItem[] = []
 
 export default function EconomyPage() {
   const [transactions] = useState<Transaction[]>(mockTransactions)

@@ -4,12 +4,14 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Zap, Bell, Shield, Workflow } from 'lucide-react'
 
+interface Automation {
+  id: number
+  name: string
+  enabled: boolean
+}
+
 export default function AutomationPage() {
-  const [automations, setAutomations] = useState([
-    { id: 1, name: 'Automatisk e-postuppföljning', enabled: true },
-    { id: 2, name: 'Leadnotifikationer', enabled: false },
-    { id: 3, name: 'Veckorapporter', enabled: true }
-  ])
+  const [automations, setAutomations] = useState<Automation[]>([])
 
   const toggleAutomation = (id: number) => {
     setAutomations(prev => 

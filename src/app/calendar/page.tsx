@@ -17,51 +17,7 @@ interface Event {
   priority: 'low' | 'medium' | 'high'
 }
 
-const mockEvents: Event[] = [
-  {
-    id: '1',
-    title: 'Demo med TechFlow AB',
-    description: 'Produktdemonstration för Anna Andersson',
-    start: '2024-01-15T10:00:00',
-    end: '2024-01-15T11:00:00',
-    type: 'demo',
-    attendees: ['Anna Andersson', 'Du'],
-    isVideoCall: true,
-    priority: 'high'
-  },
-  {
-    id: '2',
-    title: 'Uppföljning Nordic Solutions',
-    description: 'Diskutera offertens status',
-    start: '2024-01-15T14:30:00',
-    end: '2024-01-15T15:00:00',
-    type: 'follow-up',
-    attendees: ['Marcus Lindberg'],
-    location: 'Konferensrum A',
-    priority: 'high'
-  },
-  {
-    id: '3',
-    title: 'Teamsammanträde',
-    description: 'Veckans genomgång av pipeline',
-    start: '2024-01-16T09:00:00',
-    end: '2024-01-16T10:00:00',
-    type: 'internal',
-    attendees: ['Sarah', 'Alex', 'Du'],
-    location: 'Konferensrum B',
-    priority: 'medium'
-  },
-  {
-    id: '4',
-    title: 'Telefonsamtal - StartupCorp',
-    description: 'Kvalificering av Emma Johansson',
-    start: '2024-01-16T15:00:00',
-    end: '2024-01-16T15:30:00',
-    type: 'call',
-    attendees: ['Emma Johansson'],
-    priority: 'medium'
-  }
-]
+const mockEvents: Event[] = []
 
 const getEventTypeColor = (type: Event['type']) => {
   switch (type) {
