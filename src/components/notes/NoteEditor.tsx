@@ -136,7 +136,7 @@ export default function NoteEditor({
     { type: 'code', icon: Code, label: 'Kod', description: 'Kodblock med syntax highlighting' },
   ]
 
-  const renderBlock = (block: Block) => {
+  const renderBlock = (block: NoteBlock) => {
     const commonProps = {
       key: block.id,
       ref: (el: HTMLDivElement) => blockRefs.current[block.id] = el,
