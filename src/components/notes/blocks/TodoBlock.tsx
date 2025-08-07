@@ -14,7 +14,7 @@ interface TodoContent {
 
 interface Block {
   id: string
-  type: string
+  type: 'text' | 'heading' | 'todo' | 'list' | 'quote' | 'code' | 'image' | 'divider'
   content: TodoContent
   metadata?: Record<string, unknown>
 }

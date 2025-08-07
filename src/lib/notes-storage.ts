@@ -30,6 +30,8 @@ interface Note {
   }>
   createdAt: string
   updatedAt: string
+  hasUrgentTodos?: boolean
+  blocksCount?: number
 }
 
 const STORAGE_KEY = 'coworker_notes'

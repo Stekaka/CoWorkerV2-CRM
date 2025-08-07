@@ -6,13 +6,9 @@ import { Quote, User } from 'lucide-react'
 
 interface Block {
   id: string
-  type: string
+  type: 'text' | 'heading' | 'todo' | 'list' | 'quote' | 'code' | 'image' | 'divider'
   content: string
-  metadata?: {
-    author?: string
-    source?: string
-    style?: 'default' | 'callout' | 'warning' | 'info'
-  }
+  metadata?: Record<string, unknown>
 }
 
 interface QuoteBlockProps {
@@ -36,9 +32,9 @@ export default function QuoteBlock({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const authorRef = useRef<HTMLInputElement>(null)
   
-  const style = block.metadata?.style || 'default'
-  const author = block.metadata?.author || ''
-  const source = block.metadata?.source || ''
+  const style = typeof block.metadata?.style === 'string' ? block.metadata.style : 'default'
+  const author = typeof block.metadata?.author === 'string' ? block.metadata.author : ''
+  const source = typeof block.metadata?.source === 'string' ? block.metadata.source : ''
 
   useEffect(() => {
     if (isFocused && textareaRef.current) {

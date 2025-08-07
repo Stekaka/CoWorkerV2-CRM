@@ -2,23 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { X, Tag, User, Building, ShoppingCart, Briefcase, Star, AlertCircle } from 'lucide-react'
-
-interface Note {
-  id: string
-  title: string
-  content: string
-  tags: string[]
-  linkedTo?: {
-    type: 'lead' | 'customer' | 'order' | 'case'
-    id: string
-    name: string
-  }
-  createdAt: Date
-  updatedAt: Date
-  isPinned: boolean
-  hasUrgentTodos: boolean
-  blocksCount: number
-}
+import { type Note } from '@/utils/noteUtils'
 
 interface NoteFiltersProps {
   selectedTags: string[]
@@ -34,8 +18,8 @@ export default function NoteFilters({ selectedTags, onTagsChange, notes }: NoteF
   const linkedEntities = Array.from(
     new Map(
       notes
-        .filter(note => note.linkedTo)
-        .map(note => [note.linkedTo!.id, note.linkedTo!])
+        .flatMap(note => note.linkedEntities)
+        .map(entity => [entity.id, entity])
     ).values()
   )
 
@@ -165,7 +149,9 @@ export default function NoteFilters({ selectedTags, onTagsChange, notes }: NoteF
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {linkedEntities.map((entity) => {
-                const entityCount = notes.filter(note => note.linkedTo?.id === entity.id).length
+                const entityCount = notes.filter(note => 
+                  note.linkedEntities.some(linkedEntity => linkedEntity.id === entity.id)
+                ).length
                 
                 return (
                   <motion.button

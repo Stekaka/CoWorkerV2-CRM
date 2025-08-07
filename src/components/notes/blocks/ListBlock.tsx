@@ -6,7 +6,7 @@ import { List, ListOrdered, Plus, Grip, X } from 'lucide-react'
 
 interface Block {
   id: string
-  type: string
+  type: 'text' | 'heading' | 'todo' | 'list' | 'quote' | 'code' | 'image' | 'divider'
   content: string
   metadata?: {
     listType?: 'bullet' | 'numbered'

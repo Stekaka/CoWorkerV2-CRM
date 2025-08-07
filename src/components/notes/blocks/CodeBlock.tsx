@@ -6,12 +6,11 @@ import { Code, Copy, Eye, EyeOff, Check, Terminal } from 'lucide-react'
 
 interface Block {
   id: string
-  type: string
+  type: 'text' | 'heading' | 'todo' | 'list' | 'quote' | 'code' | 'image' | 'divider'
   content: string
   metadata?: {
     language?: string
-    filename?: string
-    showLineNumbers?: boolean
+    [key: string]: unknown
   }
 }
 
@@ -38,7 +37,7 @@ export default function CodeBlock({
   const filenameRef = useRef<HTMLInputElement>(null)
   
   const language = block.metadata?.language || 'text'
-  const filename = block.metadata?.filename || ''
+  const filename = typeof block.metadata?.filename === 'string' ? block.metadata.filename : ''
   const showLineNumbers = block.metadata?.showLineNumbers || false
 
   useEffect(() => {

@@ -16,23 +16,7 @@ import {
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { sv } from 'date-fns/locale'
-
-interface Note {
-  id: string
-  title: string
-  content: string
-  tags: string[]
-  linkedTo?: {
-    type: 'lead' | 'customer' | 'order' | 'case'
-    id: string
-    name: string
-  }
-  createdAt: Date
-  updatedAt: Date
-  isPinned: boolean
-  hasUrgentTodos: boolean
-  blocksCount: number
-}
+import { type Note } from '@/utils/noteUtils'
 
 interface NoteCardProps {
   note: Note
@@ -122,11 +106,16 @@ export default function NoteCard({ note, view }: NoteCardProps) {
                   </div>
                 )}
 
-                {/* Linked To */}
-                {note.linkedTo && (
-                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-medium ${getLinkedColor(note.linkedTo.type)}`}>
-                    {getLinkedIcon(note.linkedTo.type)}
-                    {note.linkedTo.name}
+                {/* Linked Entities */}
+                {note.linkedEntities.length > 0 && (
+                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-medium ${getLinkedColor(note.linkedEntities[0].type)}`}>
+                    {getLinkedIcon(note.linkedEntities[0].type)}
+                    {note.linkedEntities[0].name}
+                    {note.linkedEntities.length > 1 && (
+                      <span className="text-xs opacity-75">
+                        +{note.linkedEntities.length - 1} fler
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -138,7 +127,7 @@ export default function NoteCard({ note, view }: NoteCardProps) {
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
-                  {formatDistanceToNow(note.updatedAt, { addSuffix: true, locale: sv })}
+                  {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true, locale: sv })}
                 </div>
               </div>
             </div>
@@ -212,16 +201,20 @@ export default function NoteCard({ note, view }: NoteCardProps) {
       )}
 
       {/* Linked To */}
-      {note.linkedTo && (
-        <div className="mb-4">
-          <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium ${getLinkedColor(note.linkedTo.type)}`}>
-            {getLinkedIcon(note.linkedTo.type)}
-            <span>Kopplad till {note.linkedTo.name}</span>
+      {/* Linked Entities */}
+      {note.linkedEntities.length > 0 && (
+        <div className="flex items-center gap-2 mb-4">
+          <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium ${getLinkedColor(note.linkedEntities[0].type)}`}>
+            {getLinkedIcon(note.linkedEntities[0].type)}
+            <span>Kopplad till {note.linkedEntities[0].name}</span>
+            {note.linkedEntities.length > 1 && (
+              <span className="text-xs opacity-75">
+                (+{note.linkedEntities.length - 1} fler)
+              </span>
+            )}
           </div>
         </div>
-      )}
-
-      {/* Footer */}
+      )}      {/* Footer */}
       <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-700">
         <div className="flex items-center gap-1 text-xs text-slate-500">
           <FileText className="w-3 h-3" />
@@ -229,7 +222,7 @@ export default function NoteCard({ note, view }: NoteCardProps) {
         </div>
         <div className="flex items-center gap-1 text-xs text-slate-500">
           <Clock className="w-3 h-3" />
-          <span>{formatDistanceToNow(note.updatedAt, { addSuffix: true, locale: sv })}</span>
+          <span>{formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true, locale: sv })}</span>
         </div>
       </div>
     </motion.div>

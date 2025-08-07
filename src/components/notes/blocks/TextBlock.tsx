@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 
 interface Block {
   id: string
-  type: string
+  type: 'text' | 'heading' | 'todo' | 'list' | 'quote' | 'code' | 'image' | 'divider'
   content: string
   metadata?: Record<string, unknown>
 }
@@ -72,7 +72,7 @@ export default function TextBlock({
         onUpdate({ type: 'list', content: '', metadata: { type: 'numbered' } })
       } else if (value.endsWith('[]')) {
         e.preventDefault()
-        onUpdate({ type: 'todo', content: { text: '', checked: false } })
+        onUpdate({ type: 'todo', content: '', metadata: { checked: false } })
       } else if (value.endsWith('>')) {
         e.preventDefault()
         onUpdate({ type: 'quote', content: '' })

@@ -17,11 +17,11 @@ import {
 } from 'lucide-react'
 import NoteCard from '@/components/notes/NoteCard'
 import NoteFilters from '@/components/notes/NoteFilters'
-import { NotesStorage, type Note } from '@/lib/notes-storage'
-import { useRouter } from 'next/navigation'
+import { NotesStorage } from '@/lib/notes-storage'
+import { normalizeNotes, normalizeNote, type Note as CompleteNote } from '@/utils/noteUtils'
 
 export default function NotesPage() {
-  const [notes, setNotes] = useState<Note[]>([])
+  const [notes, setNotes] = useState<CompleteNote[]>([])
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
@@ -34,7 +34,8 @@ export default function NotesPage() {
 
   // Load notes from localStorage on mount
   useEffect(() => {
-    setNotes(NotesStorage.getAllNotes())
+    const rawNotes = NotesStorage.getAllNotes()
+    setNotes(normalizeNotes(rawNotes))
     setIsLoading(false)
   }, [])
 
@@ -69,8 +70,9 @@ export default function NotesPage() {
       const newNote = NotesStorage.createNote(quickTitle.trim())
       NotesStorage.saveNote(newNote)
       
-      // Update local state
-      setNotes([newNote, ...notes])
+      // Normalize the note before adding to state
+      const normalizedNote = normalizeNote(newNote)
+      setNotes([normalizedNote, ...notes])
       setQuickTitle('')
       setShowQuickCreate(false)
       

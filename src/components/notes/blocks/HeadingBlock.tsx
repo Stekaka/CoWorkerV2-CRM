@@ -6,7 +6,7 @@ import { Hash } from 'lucide-react'
 
 interface Block {
   id: string
-  type: string
+  type: 'text' | 'heading' | 'todo' | 'list' | 'quote' | 'code' | 'image' | 'divider'
   content: string
   metadata?: {
     level?: number

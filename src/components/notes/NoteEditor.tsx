@@ -36,6 +36,17 @@ export interface Block {
     checked?: boolean // For todos
     language?: string // For code blocks
     style?: string // For custom styling
+    listType?: 'bullet' | 'numbered' // For lists
+    items?: Array<{
+      id: string
+      content: string
+      indent: number
+    }> // For lists
+    filename?: string // For code blocks
+    showLineNumbers?: boolean // For code blocks
+    author?: string // For quotes
+    source?: string // For quotes
+    [key: string]: any // Allow additional metadata
   }
 }
 
