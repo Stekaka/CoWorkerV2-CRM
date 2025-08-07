@@ -112,7 +112,7 @@ export default function NoteEditor({
       addBlock(blockId, 'text')
     } else if (e.key === 'Backspace') {
       const block = blocks.find(b => b.id === blockId)
-      if (block?.content === '' || (typeof block?.content === 'object' && block.content.text === '')) {
+      if (block?.content === '' || (block?.type === 'todo' && block.data && typeof block.data === 'object' && 'text' in block.data && block.data.text === '')) {
         e.preventDefault()
         deleteBlock(blockId)
       }
