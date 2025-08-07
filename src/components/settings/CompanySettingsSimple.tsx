@@ -72,9 +72,12 @@ export default function CompanySettingsSimple() {
         return;
       }
 
-      setUser(session.user);
       if (session.user.email) {
+        setUser({ id: session.user.id, email: session.user.email });
         await loadData({ id: session.user.id, email: session.user.email });
+      } else {
+        console.log('No email found, redirecting to login');
+        window.location.href = '/login';
       }
     } catch (error) {
       console.error('Auth check error:', error);

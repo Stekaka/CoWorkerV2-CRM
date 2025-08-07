@@ -596,7 +596,7 @@ export default function CompanySettings() {
                         {organizationModules
                           .filter(om => om.is_enabled)
                           .map(orgModule => {
-                            const hasAccess = hasUserModuleAccess(companyUser.user_id, orgModule.module_name);
+                            const hasAccess = hasUserModuleAccess(companyUser.id, orgModule.module_name);
                             const moduleInfo = availableModules.find(m => m.name === orgModule.module_name);
                             
                             return (
@@ -607,13 +607,13 @@ export default function CompanySettings() {
                                 >
                                   {moduleInfo?.display_name || orgModule.module_name}
                                 </Badge>
-                                {isAdmin && companyUser.user_id !== user?.id && (
+                                {isAdmin && companyUser.id !== user?.id && (
                                   <Button
                                     variant="ghost"
                                     size="sm"
                                     className="h-6 w-6 p-0"
                                     onClick={() => handleToggleUserModuleAccess(
-                                      companyUser.user_id, 
+                                      companyUser.id, 
                                       orgModule.module_name, 
                                       !hasAccess
                                     )}
