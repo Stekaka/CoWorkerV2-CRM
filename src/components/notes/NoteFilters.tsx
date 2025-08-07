@@ -1,23 +1,20 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { X, Tag, User, Building, ShoppingCart, Briefcase, Star, AlertCircle } from 'lucide-react'
+import { X, Tag, Star, AlertCircle } from 'lucide-react'
+import { NoteBlock } from '@/lib/supabase'
 
 interface Note {
   id: string
   title: string
-  content: string
+  content: NoteBlock[]
   tags: string[]
-  linkedTo?: {
-    type: 'lead' | 'customer' | 'order' | 'case'
-    id: string
-    name: string
-  }
-  createdAt: Date
-  updatedAt: Date
-  isPinned: boolean
-  hasUrgentTodos: boolean
-  blocksCount: number
+  is_pinned: boolean
+  lead_id: string | null
+  company_id: string
+  created_by: string
+  created_at: string
+  updated_at: string
 }
 
 interface NoteFiltersProps {
@@ -30,14 +27,8 @@ export default function NoteFilters({ selectedTags, onTagsChange, notes }: NoteF
   // Extract all unique tags from notes
   const allTags = Array.from(new Set(notes.flatMap(note => note.tags)))
   
-  // Extract all unique linked entities
-  const linkedEntities = Array.from(
-    new Map(
-      notes
-        .filter(note => note.linkedTo)
-        .map(note => [note.linkedTo!.id, note.linkedTo!])
-    ).values()
-  )
+  // Extract all unique tags
+  const allTags = Array.from(new Set(notes.flatMap(note => note.tags)))
 
   const toggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
@@ -47,28 +38,8 @@ export default function NoteFilters({ selectedTags, onTagsChange, notes }: NoteF
     }
   }
 
-  const getEntityIcon = (type: string) => {
-    switch (type) {
-      case 'lead': return <User className="w-4 h-4" />
-      case 'customer': return <Building className="w-4 h-4" />
-      case 'order': return <ShoppingCart className="w-4 h-4" />
-      case 'case': return <Briefcase className="w-4 h-4" />
-      default: return null
-    }
-  }
-
-  const getEntityColor = (type: string) => {
-    switch (type) {
-      case 'lead': return 'border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 dark:border-blue-800 dark:text-blue-400 dark:bg-blue-900/20 dark:hover:bg-blue-900/30'
-      case 'customer': return 'border-green-200 text-green-700 bg-green-50 hover:bg-green-100 dark:border-green-800 dark:text-green-400 dark:bg-green-900/20 dark:hover:bg-green-900/30'
-      case 'order': return 'border-purple-200 text-purple-700 bg-purple-50 hover:bg-purple-100 dark:border-purple-800 dark:text-purple-400 dark:bg-purple-900/20 dark:hover:bg-purple-900/30'
-      case 'case': return 'border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-900/20 dark:hover:bg-amber-900/30'
-      default: return 'border-slate-200 text-slate-700 bg-slate-50 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-400 dark:bg-slate-800 dark:hover:bg-slate-700'
-    }
-  }
-
-  const pinnedCount = notes.filter(note => note.isPinned).length
-  const urgentCount = notes.filter(note => note.hasUrgentTodos).length
+  const pinnedCount = notes.filter(note => note.is_pinned).length
+  const urgentCount = 0 // Simplified since we don't have hasUrgentTodos anymore
 
   return (
     <motion.div
@@ -157,38 +128,9 @@ export default function NoteFilters({ selectedTags, onTagsChange, notes }: NoteF
           </div>
         )}
 
-        {/* Linked Entities Filter */}
-        {linkedEntities.length > 0 && (
-          <div>
-            <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
-              Kopplad till ({linkedEntities.length})
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {linkedEntities.map((entity) => {
-                const entityCount = notes.filter(note => note.linkedTo?.id === entity.id).length
-                
-                return (
-                  <motion.button
-                    key={entity.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`inline-flex items-center gap-2 px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${getEntityColor(entity.type)}`}
-                  >
-                    {getEntityIcon(entity.type)}
-                    <span className="truncate">{entity.name}</span>
-                    <span className="text-xs px-1.5 py-0.5 bg-white/50 dark:bg-black/20 rounded">
-                      {entityCount}
-                    </span>
-                  </motion.button>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
         {/* Statistics */}
         <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-2xl font-bold text-slate-900 dark:text-white">{notes.length}</div>
               <div className="text-sm text-slate-600 dark:text-slate-400">Totalt</div>
@@ -200,10 +142,6 @@ export default function NoteFilters({ selectedTags, onTagsChange, notes }: NoteF
             <div>
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{allTags.length}</div>
               <div className="text-sm text-slate-600 dark:text-slate-400">Taggar</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{linkedEntities.length}</div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">Kopplingar</div>
             </div>
           </div>
         </div>
