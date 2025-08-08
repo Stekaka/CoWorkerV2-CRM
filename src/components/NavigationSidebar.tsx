@@ -15,9 +15,7 @@ import {
   Building2,
   Mail,
   Target,
-  Zap,
-  Menu,
-  X
+  Zap
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -222,25 +220,6 @@ export default function NavigationSidebar({
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <button
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-slate-800 text-white rounded-lg shadow-lg"
-        onClick={(e) => {
-          e.stopPropagation()
-          if (isOpen !== undefined) {
-            // External control - let parent handle
-            if (onClose && mobileMenuOpen) {
-              onClose()
-            }
-          } else {
-            // Internal control
-            setIsMobileMenuOpen(!isMobileMenuOpen)
-          }
-        }}
-      >
-        {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-      </button>
-
       {/* Mobile Overlay */}
       <AnimatePresence>
         {mobileMenuOpen && (

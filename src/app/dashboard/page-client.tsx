@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import supabase from '@/lib/supabase-client'
+import MainLayout from '@/components/layout/MainLayout'
 import PremiumDashboard from './components/PremiumDashboard'
 
 export default function DashboardPage() {
@@ -44,5 +45,9 @@ export default function DashboardPage() {
     )
   }
 
-  return <PremiumDashboard />
+  return (
+    <MainLayout activeSection="dashboard">
+      <PremiumDashboard />
+    </MainLayout>
+  )
 }
