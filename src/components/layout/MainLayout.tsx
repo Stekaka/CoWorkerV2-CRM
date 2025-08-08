@@ -51,7 +51,7 @@ export default function MainLayout({
       {/* Sidebar - Always visible on desktop, mobile overlay */}
       <NavigationSidebar 
         activeSection={activeSection}
-        onSectionChange={onSectionChange}
+        setActiveSection={onSectionChange}
         isOpen={isSidebarOpen}
         onClose={handleCloseSidebar}
       />

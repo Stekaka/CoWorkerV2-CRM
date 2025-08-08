@@ -326,10 +326,6 @@ export default function PremiumDashboard() {
       <NavigationSidebar
         activeSection={activeSection}
         onSectionChange={setActiveSection}
-        onOpenModal={openModal}
-        currentTime={currentTime}
-        isDragMode={isDragMode}
-        onToggleDragMode={toggleDragMode}
       />
 
       <div className="ml-80 min-h-screen">
