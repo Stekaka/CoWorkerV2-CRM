@@ -10,9 +10,6 @@ export interface Order {
   category?: string
 }
 
-// Mock orders data - this would normally come from Supabase
-export const mockOrders: Order[] = []
-
 // Helper functions for data consistency
 export const getOrdersByMonth = (orders: Order[], month: string, year: string = '2024') => {
   const monthNumber = new Date(`${month} 1, ${year}`).getMonth() + 1

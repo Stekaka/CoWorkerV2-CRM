@@ -1,4 +1,4 @@
-// CRM Data Types and Mock Data
+// CRM Data Types
 
 export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'proposal' | 'negotiation' | 'won' | 'lost'
 export type ActivityType = 'call' | 'email' | 'meeting' | 'note' | 'task'
@@ -67,8 +67,6 @@ export interface Lead {
   assignedTo: string
 }
 
-// Mock Data
-export const mockLeads: Lead[] = []
 export const getStatusColor = (status: LeadStatus): string => {
   switch (status) {
     case 'new': return 'bg-gray-500/20 text-gray-400 border-gray-500/30'

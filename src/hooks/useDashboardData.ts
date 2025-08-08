@@ -1,86 +1,49 @@
 'use client'
 
-import { useState } from 'react'
+import { useEconomyData } from './useEconomyData'
+import { useLeadsData } from './useLeadsData'
+import { useTasksData } from './useTasksData'
 
-// TypeScript interfaces
-export interface Lead {
-  id: string
-  name: string
-  company: string
-  priority: 'hot' | 'warm' | 'cold'
-  status: string
-  email: string
-  phone: string
-  createdAt: string
-}
-
-export interface Offer {
-  id: string
-  title: string
-  client: string
-  amount: number
-  status: 'pending' | 'accepted' | 'declined'
-  date: string
-}
-
-export interface Meeting {
-  id: string
-  title: string
-  date: string
-  time: string
-  attendees: string[]
-  type: 'call' | 'meeting' | 'demo'
-}
-
-export interface Todo {
-  id: string
-  title: string
-  description: string
-  completed: boolean
-  priority: 'high' | 'medium' | 'low'
-  dueDate: string
-  leadCompany?: string
-}
-
-export interface Activity {
-  id: string
-  type: 'call' | 'email' | 'meeting' | 'task'
-  title: string
-  description: string
-  timestamp: string
-  leadName?: string
-}
-
-// Custom hook
 export function useDashboardData() {
-  const [data] = useState({
+  const economy = useEconomyData()
+  const leads = useLeadsData()
+  const tasks = useTasksData()
+
+  const loading = economy.loading || leads.loading || tasks.loading
+  const error = economy.error || leads.error || tasks.error
+
+  // Kombinera all data
+  const combinedData = {
     // Leads
-    totalLeads: 0,
-    hotLeads: 0,
-    recentLeads: [] as Lead[],
-    conversionRate: 0,
+    totalLeads: leads.totalLeads,
+    hotLeads: leads.hotLeads,
+    recentLeads: leads.recentLeads,
+    conversionRate: leads.totalLeads > 0 ? Math.round((leads.hotLeads / leads.totalLeads) * 100) : 0,
     
     // Economy
-    pipelineValue: 0,
-    monthlyRevenue: 0,
-    yearlyRevenue: 0,
-    pendingOffers: 0,
-    recentOffers: [] as Offer[],
+    pipelineValue: economy.data.pipelineValue,
+    monthlyRevenue: economy.data.monthlyRevenue,
+    yearlyRevenue: economy.data.bookedRevenue,
+    pendingOffers: economy.data.pendingOffers,
+    recentOffers: [], // TODO: Implementera recent offers från API
     
     // Calendar & Tasks
-    todayTasks: [] as Todo[],
-    todayMeetings: 0,
-    upcomingReminders: [] as Todo[],
-    meetings: [] as Meeting[],
-    todos: [] as Todo[],
-    upcomingMeetings: [] as Meeting[],
-    completedTodos: 0,
-    pendingTodos: 0,
-    totalTodos: 0,
+    todayTasks: tasks.todayTasks,
+    todayMeetings: 0, // TODO: Implementera när calendar finns
+    upcomingReminders: tasks.todayTasks,
+    meetings: [], // TODO: Implementera när calendar finns
+    todos: tasks.tasks,
+    upcomingMeetings: [], // TODO: Implementera när calendar finns
+    completedTodos: tasks.completedTodos,
+    pendingTodos: tasks.pendingTodos,
+    totalTodos: tasks.totalTodos,
     
     // Activities
-    recentActivities: [] as Activity[]
-  })
+    recentActivities: [], // TODO: Implementera activities från API
+    
+    loading,
+    error
+  }
 
-  return data
+  return combinedData
 }

@@ -15,42 +15,7 @@ const CalendarTodoCard = () => (
   <div className="text-white p-4 bg-slate-800 rounded-lg">Calendar Todo</div>
 )
 
-// Temporary inline hook to avoid import issues
-function useDashboardData() {
-  const [data, setData] = useState({
-    totalLeads: 156,
-    hotLeads: 23,
-    recentLeads: [],
-    conversionRate: 12.5,
-    pipelineValue: 2400000,
-    monthlyRevenue: 850000,
-    yearlyRevenue: 9750000,
-    pendingOffers: 8,
-    recentOffers: [],
-    todayTasks: [],
-    todayMeetings: 3,
-    upcomingReminders: [],
-    meetings: [],
-    todos: [],
-    upcomingMeetings: [],
-    completedTodos: 12,
-    pendingTodos: 7,
-    totalTodos: 19,
-    recentActivities: [],
-    loading: false,
-    error: null
-  })
-  
-  useEffect(() => {
-    // Simulate data loading
-    const timer = setTimeout(() => {
-      setData(prev => ({ ...prev, loading: false }))
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [])
-  
-  return data
-}
+import { useDashboardData } from '@/hooks/useDashboardData'
 
 export default function PremiumDashboard() {
   const dashboardData = useDashboardData()
