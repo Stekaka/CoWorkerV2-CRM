@@ -22,10 +22,6 @@ import Link from 'next/link'
 interface NavigationSidebarProps {
   activeSection?: string
   onSectionChange?: (section: string) => void
-  onOpenModal?: (modalId: string) => void
-  currentTime?: Date
-  isDragMode?: boolean
-  onToggleDragMode?: () => void
 }
 
 interface NavItem {
@@ -40,13 +36,7 @@ interface NavItem {
   }[]
 }
 
-export default function NavigationSidebar({ 
-  activeSection = 'dashboard', 
-  onSectionChange, 
-  currentTime, 
-  isDragMode, 
-  onToggleDragMode 
-}: NavigationSidebarProps) {
+export default function NavigationSidebar({ activeSection = 'dashboard', onSectionChange }: NavigationSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null)
 
@@ -177,7 +167,7 @@ export default function NavigationSidebar({
     <motion.div
       initial={false}
       animate={{ width: isCollapsed ? '80px' : '280px' }}
-      className="bg-gradient-to-b from-slate-800 to-slate-900 border-r border-slate-700 flex flex-col h-screen relative z-40"
+      className="fixed left-0 top-0 bg-gradient-to-b from-slate-800 to-slate-900 border-r border-slate-700 flex flex-col h-screen z-40"
     >
       {/* Header */}
       <div className="p-6 border-b border-slate-700">

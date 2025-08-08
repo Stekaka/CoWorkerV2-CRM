@@ -20,9 +20,9 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50">
       <NavigationSidebar />
-      <div className="flex-1 overflow-auto">
+      <div className="ml-20 lg:ml-[280px] transition-all duration-300">
         {children}
       </div>
     </div>
